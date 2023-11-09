@@ -31,14 +31,19 @@ void LaneDetector<PREC>::setConfiguration(const YAML::Node& config)
 
 /*
 Example Function Form
-template <typename PREC>
-void LaneDector<PREC>::yourOwnFunction()
-{
-    write your code.
-    &
-    you must specify your own function to your LaneDetector.hpp file.
-}
 */
+template <typename PREC>
+void LaneDetector<PREC>::yourOwnFunction(const cv::Mat img)
+{
+    // write your code.
+    // &
+    // you must specify your own function to your LaneDetector.hpp file.
+    if(!img.empty()){
+        cv::imshow("frame", img);
+        cv::waitKey(33);   
+    }
+}
+
 
 template class LaneDetector<float>;
 template class LaneDetector<double>;

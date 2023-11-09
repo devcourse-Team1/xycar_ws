@@ -49,9 +49,11 @@ void LaneKeepingSystem<PREC>::run()
     ros::Rate rate(kFrameRate);
     while (ros::ok())
     {
+        ros::spinOnce();
         /*
         write your code.
         */
+       mLaneDetector->yourOwnFunction(mFrame);
     }
 }
 

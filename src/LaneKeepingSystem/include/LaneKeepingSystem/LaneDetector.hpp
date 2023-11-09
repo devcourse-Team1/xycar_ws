@@ -18,6 +18,7 @@ public:
     static inline const cv::Scalar kBlue = {255, 0, 0}; /// Scalar values of Blue
 
     LaneDetector(const YAML::Node& config) {setConfiguration(config);}
+    void yourOwnFunction(const cv::Mat img);
 
 private:
     int32_t mImageWidth;
