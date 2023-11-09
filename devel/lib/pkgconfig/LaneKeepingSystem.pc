@@ -1,0 +1,8 @@
+prefix=/home/blue/xycar_ws/devel
+
+Name: LaneKeepingSystem
+Description: Description of LaneKeepingSystem
+Version: 0.0.0
+Cflags: 
+Libs: -L${prefix}/lib 
+Requires: 
