@@ -23,6 +23,7 @@ void LaneDetector<PREC>::setConfiguration(const YAML::Node& config)
 {
     mImageWidth = config["IMAGE"]["WIDTH"].as<int32_t>();
     mImageHeight = config["IMAGE"]["HEIGHT"].as<int32_t>();
+    mYOffset = config["IMAGE"]["Y_OFFSET"].as<int32_t>();
 
     /**
      * If you want to add your parameter
@@ -38,20 +39,16 @@ Example Function Form
 template <typename PREC>
 cv::Mat LaneDetector<PREC>::regionOfInterest(cv::Mat src)
 {
-
     cv::Mat src_roi;
-    int width = src.cols;
-    int height = src.rows;
 
     const int x = 250;
-    const int y_offset = 400;
 
-    const cv::Point p1(0, y_offset - 10), p2(x, y_offset + 10);
-    const cv::Point p3(width - x, y_offset - 10), p4(width, y_offset + 10);
+    const cv::Point p1(0, mYOffset - 10), p2(x, mYOffset + 10);
+    const cv::Point p3(mImageWidth - x, mYOffset - 10), p4(mImageWidth, mYOffset + 10);
 
-    cv::Mat roi_mask = cv::Mat::zeros(height, width, CV_8UC1);
-    cv::rectangle(roi_mask, p1, p2, cv::Scalar(255, 0, 0), -1, cv::LINE_AA);
-    cv::rectangle(roi_mask, p3, p4, cv::Scalar(255, 0, 0), -1, cv::LINE_AA);
+    cv::Mat roi_mask = cv::Mat::zeros(mImageHeight, mImageWidth, CV_8UC1);
+    cv::rectangle(roi_mask, p1, p2, kBlue, -1, cv::LINE_AA);
+    cv::rectangle(roi_mask, p3, p4, kBlue, -1, cv::LINE_AA);
     cv::bitwise_and(src, roi_mask, src_roi);
 
     return src_roi;
@@ -61,13 +58,9 @@ template <typename PREC>
 std::pair<double, double> LaneDetector<PREC>::calculatePoints(std::pair<double, double> prev_result, std::vector<cv::Vec4i> lines)
 {
     std::vector<double> results;
-    const int width = 640;
-    const int y_offset = 400;
-    const int sampling_data_size = 10;
-    const int pos_threshold = 70;
-    int lscnt(0), rscnt(0);
-    double mpoint(0);
     std::pair<double, double> cur_result;
+    const int pos_threshold = 70;
+    double mpoint(0);
 
     for (cv::Vec4i line : lines)
     {
@@ -84,14 +77,14 @@ std::pair<double, double> LaneDetector<PREC>::calculatePoints(std::pair<double, 
 
         double y_intercept = (x2 * y1 - x1 * y2) / (double)(x2 - x1);
 
-        mpoint = (y_offset - y_intercept) / (double)slope;
+        mpoint = (mYOffset - y_intercept) / (double)slope;
         results.push_back(mpoint);
     }
 
     double lpos(0.0), rpos(0.0), lcnt(0.0), rcnt(0.0);
     for (double result : results)
     {
-        if (result <= (width / 2))
+        if (result <= (mImageWidth / 2))
         {
             lpos += result;
             lcnt++;
@@ -127,8 +120,6 @@ template <typename PREC>
 double LaneDetector<PREC>::Hough(const cv::Mat src)
 {
     std::pair<double, double> result;
-    const int y_offset = 400;
-    const int width = 640;
 
     if (src.empty())
     {
@@ -155,16 +146,16 @@ double LaneDetector<PREC>::Hough(const cv::Mat src)
         result = calculatePoints(result, lines);
 
         // Draw a line and points using calculated results
-        line(src, cv::Point(0, y_offset), cv::Point(width, y_offset), cv::Scalar(0, 255, 128), 1, cv::LINE_AA);
-        circle(src, cv::Point(result.first, y_offset), 3, cv::Scalar(0, 0, 255), -1, cv::LINE_AA, 0);
-        circle(src, cv::Point(result.second, y_offset), 3, cv::Scalar(0, 0, 255), -1, cv::LINE_AA, 0);
-        circle(src, cv::Point((result.first + result.second) / 2, y_offset), 3, cv::Scalar(255, 0, 0), -1, cv::LINE_AA, 0);
-        circle(src, cv::Point(width / 2, y_offset), 3, cv::Scalar(0, 255, 0), -1, cv::LINE_AA, 0);
+        line(src, cv::Point(0, mYOffset), cv::Point(mImageWidth, mYOffset), cv::Scalar(0, 255, 128), 1, cv::LINE_AA);
+        circle(src, cv::Point(result.first, mYOffset), 3, kBlue, -1, cv::LINE_AA, 0);
+        circle(src, cv::Point(result.second, mYOffset), 3, kBlue, -1, cv::LINE_AA, 0);
+        circle(src, cv::Point((result.first + result.second) / 2, mYOffset), 3, kRed, -1, cv::LINE_AA, 0);
+        circle(src, cv::Point(mImageWidth / 2, mYOffset), 3, kGreen, -1, cv::LINE_AA, 0);
 
-        double pos_diff = (width / 2) - ((result.first + result.second) / 2);
+        double pos_diff = (mImageWidth / 2) - ((result.first + result.second) / 2);
 
-        //imshow("result", src);
-        // cv::waitKey(30);
+        // imshow("result", src);
+        //  cv::waitKey(30);
 
         return pos_diff;
     }
