@@ -124,9 +124,8 @@ std::pair<double, double> LaneDetector<PREC>::calculatePoints(std::pair<double, 
 }
 
 template <typename PREC>
-void LaneDetector<PREC>::Hough(const cv::Mat src)
+double LaneDetector<PREC>::Hough(const cv::Mat src)
 {
-
     std::pair<double, double> result;
     const int y_offset = 400;
     const int width = 640;
@@ -162,8 +161,12 @@ void LaneDetector<PREC>::Hough(const cv::Mat src)
         circle(src, cv::Point((result.first + result.second) / 2, y_offset), 3, cv::Scalar(255, 0, 0), -1, cv::LINE_AA, 0);
         circle(src, cv::Point(width / 2, y_offset), 3, cv::Scalar(0, 255, 0), -1, cv::LINE_AA, 0);
 
-        imshow("result", src);
-        cv::waitKey(30);
+        double pos_diff = (width / 2) - ((result.first + result.second) / 2);
+
+        //imshow("result", src);
+        // cv::waitKey(30);
+
+        return pos_diff;
     }
 }
 

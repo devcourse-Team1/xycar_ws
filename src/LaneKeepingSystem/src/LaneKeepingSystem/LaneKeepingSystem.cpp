@@ -53,8 +53,31 @@ void LaneKeepingSystem<PREC>::run()
         /*
         write your code.
         */
-       //mLaneDetector->yourOwnFunction(mFrame);
-       mLaneDetector->Hough(mFrame);
+        double pos_diff;
+        // mLaneDetector->yourOwnFunction(mFrame);
+        pos_diff = mLaneDetector->Hough(mFrame);
+        // std::cout << "pos_diff : " << pos_diff << "\n";
+
+        if (pos_diff >= -20 and pos_diff <= 20)
+        {
+            drive(0);
+        }
+        else if (pos_diff > 20)
+        {
+            if (pos_diff > 50)
+            {
+                drive(20);
+            }
+            drive(10);
+        }
+        else
+        {
+            if (pos_diff < -50)
+            {
+                drive(-20);
+            }
+            drive(-10);
+        }
     }
 }
 
