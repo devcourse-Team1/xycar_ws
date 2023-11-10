@@ -23,6 +23,7 @@ public:
 private:
     int32_t mImageWidth;
     int32_t mImageHeight;
+    int32_t mYOffset;
 
     // Debug Image and flag
     cv::Mat mDebugFrame; /// < The frame for debugging
