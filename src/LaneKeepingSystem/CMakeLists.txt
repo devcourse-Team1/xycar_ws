@@ -125,6 +125,7 @@ include_directories(
 )
 
 add_library(modules
+  src/${PROJECT_NAME}/Hough.cpp
   src/${PROJECT_NAME}/LaneDetector.cpp
   src/${PROJECT_NAME}/MovingAverageFilter.cpp
   src/${PROJECT_NAME}/PIDController.cpp
