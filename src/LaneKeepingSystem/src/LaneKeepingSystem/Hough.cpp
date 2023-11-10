@@ -117,7 +117,6 @@ std::pair<double, double> LaneDetector<PREC>::calculatePoints(std::pair <double,
 template <typename PREC>
 void LaneDetector<PREC>::Hough(const cv::Mat src)
 {
-    LaneDetector<PREC> lanedetector;
 
     std::pair<double, double> result;
 	const int y_offset = 400;
@@ -133,7 +132,7 @@ void LaneDetector<PREC>::Hough(const cv::Mat src)
     cv::GaussianBlur(src_Gblur, src_Gblur, cv::Size(3, 3), 0);
     Canny(src_Gblur, src_edge, 240, 250);
 
-    cv::Mat src_roi = lanedetector.regionOfInterest(src_edge);
+    cv::Mat src_roi = regionOfInterest(src_edge);
 
     std::vector<cv::Vec4i> lines;
     HoughLinesP(src_roi, lines, 1, CV_PI / 180, 20, 15, 20);
@@ -143,7 +142,7 @@ void LaneDetector<PREC>::Hough(const cv::Mat src)
         line(src, cv::Point(l[0], l[1]), cv::Point(l[2], l[3]), cv::Scalar(0, 0, 255), 2, cv::LINE_AA);
     }
 
-    result = lanedetector.calculatePoints(result, lines);
+    result = calculatePoints(result, lines);
 
     // Draw a line and points using calculated results
     line(src, cv::Point(0, y_offset), cv::Point(width, y_offset), cv::Scalar(0, 255, 128), 1, cv::LINE_AA);
