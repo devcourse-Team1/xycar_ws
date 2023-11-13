@@ -47,8 +47,9 @@ template <typename PREC>
 void LaneKeepingSystem<PREC>::run()
 {
     ros::Rate rate(kFrameRate);
-    double pos_diff;
-    
+    PREC pos_diff;
+    PREC angle;
+
     while (ros::ok())
     {
         ros::spinOnce();
@@ -61,9 +62,9 @@ void LaneKeepingSystem<PREC>::run()
         pos_diff = mLaneDetector->Hough(mFrame);
         std::cout << "pos_diff : " << pos_diff << "\n";
 
-        mPid->getControlOutput(pos_diff);
-        speedControl(pos_diff);
-        drive(pos_diff);
+        angle = mPid->getControlOutput(pos_diff);
+        speedControl(angle);
+        drive(angle);
     }
 }
 
