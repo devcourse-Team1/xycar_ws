@@ -13,12 +13,15 @@ class LaneDetector final
 public:
     using Ptr = LaneDetector*; /// < Pointer type of the class(it's up to u)
 
-    static inline const cv::Scalar kRed = {0, 0, 255}; /// Scalar values of Red
-    static inline const cv::Scalar kGreen = {0, 255, 0}; /// Scalar values of Green
-    static inline const cv::Scalar kBlue = {255, 0, 0}; /// Scalar values of Blue
+    static inline const cv::Scalar kRed = { 0, 0, 255 };   /// Scalar values of Red
+    static inline const cv::Scalar kGreen = { 0, 255, 0 }; /// Scalar values of Green
+    static inline const cv::Scalar kBlue = { 255, 0, 0 };  /// Scalar values of Blue
 
-    LaneDetector(const YAML::Node& config) {setConfiguration(config);}
+    LaneDetector(const YAML::Node& config) { setConfiguration(config); }
     void yourOwnFunction(const cv::Mat img);
+    double Hough(const cv::Mat img);
+    cv::Mat regionOfInterest(cv::Mat img);
+    std::pair<double, double> calculatePoints(std::pair<double, double> prev_result, std::vector<cv::Vec4i> lines);
 
 private:
     int32_t mImageWidth;
@@ -30,6 +33,6 @@ private:
     void setConfiguration(const YAML::Node& config);
     bool mDebugging;
 };
-}
+} // namespace Xycar
 
 #endif // LANE_DETECTOR_HPP_
