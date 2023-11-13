@@ -41,7 +41,7 @@ cv::Mat LaneDetector<PREC>::regionOfInterest(cv::Mat src)
 {
     cv::Mat src_roi;
 
-    const int x = 250;
+    const int x = 300;
 
     const cv::Point p1(0, mYOffset - 10), p2(x, mYOffset + 10);
     const cv::Point p3(mImageWidth - x, mYOffset - 10), p4(mImageWidth, mYOffset + 10);
@@ -59,7 +59,7 @@ std::pair<double, double> LaneDetector<PREC>::calculatePoints(std::pair<double, 
 {
     std::vector<double> results;
     std::pair<double, double> cur_result;
-    const int pos_threshold = 70;
+    const int pos_threshold = 50;
     double mpoint(0);
 
     for (cv::Vec4i line : lines)
@@ -70,12 +70,11 @@ std::pair<double, double> LaneDetector<PREC>::calculatePoints(std::pair<double, 
         int y2(line[3]);
 
         double slope = (y2 - y1) / (double)(x2 - x1);
+        double y_intercept = (x2 * y1 - x1 * y2) / (double)(x2 - x1);
         // (TODO) decide threshold to get rid of outlier
         // if (slope > l_slope_threshold || slope < r_slope_threshold) {
         // 		continue;
         // }
-
-        double y_intercept = (x2 * y1 - x1 * y2) / (double)(x2 - x1);
 
         mpoint = (mYOffset - y_intercept) / (double)slope;
         results.push_back(mpoint);
@@ -99,15 +98,19 @@ std::pair<double, double> LaneDetector<PREC>::calculatePoints(std::pair<double, 
 
     if (isnan(cur_result.first) == 1)
     {
-        cur_result.first = prev_result.first;
+        // cur_result.first = prev_result.first;
+        cur_result.first = 0;
     }
     if (isnan(cur_result.second) == 1)
     {
-        cur_result.second = prev_result.second;
+        // cur_result.second = prev_result.second;
+        cur_result.second = mImageWidth;
     }
 
     if ((abs(prev_result.first - cur_result.first) < pos_threshold) || (abs(prev_result.second - cur_result.second) < pos_threshold))
     {
+        std::cout << "lpos diff : " << abs(prev_result.first - cur_result.first) << "\n";
+        std::cout << "rpos diff : " << abs(prev_result.second - cur_result.second) << "\n";
         prev_result = cur_result;
     }
 
@@ -117,14 +120,9 @@ std::pair<double, double> LaneDetector<PREC>::calculatePoints(std::pair<double, 
 }
 
 template <typename PREC>
-double LaneDetector<PREC>::Hough(const cv::Mat src)
+std::pair<double, std::pair<double, double>> LaneDetector<PREC>::Hough(const cv::Mat src, std::pair<double, double> prev_result)
 {
-    std::pair<double, double> result;
-
-    if (src.empty())
-    {
-        std::cerr << "Video load failed!\n";
-    }
+    if (src.empty()) {}
     else
     {
         cv::Mat src_Gblur, src_edge;
@@ -140,24 +138,31 @@ double LaneDetector<PREC>::Hough(const cv::Mat src)
         // Draw lines using Hough Transform results
         for (cv::Vec4i l : lines)
         {
-            line(src, cv::Point(l[0], l[1]), cv::Point(l[2], l[3]), cv::Scalar(0, 0, 255), 2, cv::LINE_AA);
+            line(src, cv::Point(l[0], l[1]), cv::Point(l[2], l[3]), kRed, 2, cv::LINE_AA);
         }
 
-        result = calculatePoints(result, lines);
+        mresult = calculatePoints(prev_result, lines);
+        // std::cout << "result : " << mresult.first << ", " << mresult.second << "\n";
 
         // Draw a line and points using calculated results
-        line(src, cv::Point(0, mYOffset), cv::Point(mImageWidth, mYOffset), cv::Scalar(0, 255, 128), 1, cv::LINE_AA);
-        circle(src, cv::Point(result.first, mYOffset), 3, kBlue, -1, cv::LINE_AA, 0);
-        circle(src, cv::Point(result.second, mYOffset), 3, kBlue, -1, cv::LINE_AA, 0);
-        circle(src, cv::Point((result.first + result.second) / 2, mYOffset), 3, kRed, -1, cv::LINE_AA, 0);
+        line(src, cv::Point(0, mYOffset), cv::Point(mImageWidth, mYOffset), kRed, 1, cv::LINE_AA);
+        circle(src, cv::Point(mresult.first, mYOffset), 3, kBlue, -1, cv::LINE_AA, 0);
+        circle(src, cv::Point(mresult.second, mYOffset), 3, kBlue, -1, cv::LINE_AA, 0);
+        circle(src, cv::Point((mresult.first + mresult.second) / 2, mYOffset), 3, kRed, -1, cv::LINE_AA, 0);
         circle(src, cv::Point(mImageWidth / 2, mYOffset), 3, kGreen, -1, cv::LINE_AA, 0);
 
-        double pos_diff = (mImageWidth / 2) - ((result.first + result.second) / 2);
+        double pos_diff = ((mresult.first + mresult.second) / 2) - (mImageWidth / 2);
 
-        // imshow("result", src);
-        //  cv::waitKey(30);
+        int fourcc = cv::VideoWriter::fourcc('D', 'I', 'V', 'X');
+        bool isColor = true;
 
-        return pos_diff;
+        cv::VideoWriter outputVideo("../../output.avi", fourcc, 33, cv::Size(mImageWidth, mImageHeight), isColor);
+
+        imshow("roi result", src_roi);
+        imshow("result", src);
+        cv::waitKey(30);
+
+        return std::pair(pos_diff, mresult);
     }
 }
 

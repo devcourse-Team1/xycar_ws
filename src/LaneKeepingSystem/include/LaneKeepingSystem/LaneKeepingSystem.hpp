@@ -40,7 +40,7 @@ public:
     /**
      * @brief Run Lane Keeping System
      */
-    void run();
+    void run(std::pair<double, double> prev_result);
 
 private:
     /**

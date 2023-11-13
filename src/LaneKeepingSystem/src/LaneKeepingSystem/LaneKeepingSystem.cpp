@@ -44,7 +44,7 @@ LaneKeepingSystem<PREC>::~LaneKeepingSystem()
 }
 
 template <typename PREC>
-void LaneKeepingSystem<PREC>::run()
+void LaneKeepingSystem<PREC>::run(std::pair<double, double> prev_result)
 {
     ros::Rate rate(kFrameRate);
     while (ros::ok())
@@ -53,31 +53,21 @@ void LaneKeepingSystem<PREC>::run()
         /*
         write your code.
         */
-        double pos_diff;
+        std::pair<double, std::pair<double, double>> result;
+        int32_t pos_diff;
+        PREC filtering_result;
         // mLaneDetector->yourOwnFunction(mFrame);
-        pos_diff = mLaneDetector->Hough(mFrame);
-        // std::cout << "pos_diff : " << pos_diff << "\n";
+        result = mLaneDetector->Hough(mFrame, prev_result);
+        pos_diff = result.first;
+        prev_result = result.second;
+        mMovingAverage->addSample(pos_diff);
+        filtering_result = mMovingAverage->getResult();
+        // pid_result = mPID->getControlOutput(filtering_result);
 
-        if (pos_diff >= -20 and pos_diff <= 20)
-        {
-            drive(0);
-        }
-        else if (pos_diff > 20)
-        {
-            if (pos_diff > 50)
-            {
-                drive(20);
-            }
-            drive(10);
-        }
-        else
-        {
-            if (pos_diff < -50)
-            {
-                drive(-20);
-            }
-            drive(-10);
-        }
+        std::cout << "filtering_result : " << filtering_result << "\n";
+
+        speedControl((filtering_result / 2));
+        drive((filtering_result / 2));
     }
 }
 
@@ -108,6 +98,7 @@ void LaneKeepingSystem<PREC>::drive(PREC steeringAngle)
     xycar_msgs::xycar_motor motorMessage;
     motorMessage.angle = std::round(steeringAngle);
     motorMessage.speed = std::round(mXycarSpeed);
+    // std::cout << "motor message: " << motorMessage << "\n";
 
     mPublisher.publish(motorMessage);
 }

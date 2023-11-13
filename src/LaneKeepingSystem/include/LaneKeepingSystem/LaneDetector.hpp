@@ -19,7 +19,7 @@ public:
 
     LaneDetector(const YAML::Node& config) { setConfiguration(config); }
     void yourOwnFunction(const cv::Mat img);
-    double Hough(const cv::Mat img);
+    std::pair<double, std::pair<double, double>> Hough(const cv::Mat img, std::pair<double, double> prev_result);
     cv::Mat regionOfInterest(cv::Mat img);
     std::pair<double, double> calculatePoints(std::pair<double, double> prev_result, std::vector<cv::Vec4i> lines);
 
@@ -27,6 +27,8 @@ private:
     int32_t mImageWidth;
     int32_t mImageHeight;
     int32_t mYOffset;
+
+    std::pair<double, double> mresult;
 
     // Debug Image and flag
     cv::Mat mDebugFrame; /// < The frame for debugging
