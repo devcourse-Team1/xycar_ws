@@ -284,7 +284,53 @@ void LaneDetector<PREC>::numSlidingWindows(const int left_mid, const int right_m
 	line(roi, cv::Point(mx1, my1), cv::Point(mx2, my2), cv::Scalar(0, 0, 255), 3);
 
 	std::vector<cv::Point> warp_left_line(2), warp_right_line(2), pos;
-    //matrix_oper_pos(frame, per_mat_tosrc, lx1, ly1, lx2, ly2, rx1, ry1, rx2, ry2);
+    matrix_oper_pos(frame, mPerMatToSrc, lx1, ly1, lx2, ly2, rx1, ry1, rx2, ry2);
+
+	return;
+}
+
+template <typename PREC>
+void LaneDetector<PREC>::matrix_oper_pos(cv::Mat frame, cv::Mat per_mat_tosrc, int lx1, int ly1, int lx2, int ly2, int rx1, int ry1, int rx2, int ry2) {
+	std::vector<cv::Point> warp_left_line, warp_right_line;
+
+	int new_lx1, new_ly1, new_lx2, new_ly2;
+	new_lx1 = (per_mat_tosrc.at<double>(0, 0) * lx1 + per_mat_tosrc.at<double>(0, 1) * ly1 + per_mat_tosrc.at<double>(0, 2)) /
+		(per_mat_tosrc.at<double>(2, 0) * lx1 + per_mat_tosrc.at<double>(2, 1) * ly1 + per_mat_tosrc.at<double>(2, 2));
+
+	new_ly1 = (per_mat_tosrc.at<double>(1, 0) * lx1 + per_mat_tosrc.at<double>(1, 1) * ly1 + per_mat_tosrc.at<double>(1, 2)) /
+		(per_mat_tosrc.at<double>(2, 0) * lx1 + per_mat_tosrc.at<double>(2, 1) * ly1 + per_mat_tosrc.at<double>(2, 2));
+
+	new_lx2 = (per_mat_tosrc.at<double>(0, 0) * lx2 + per_mat_tosrc.at<double>(0, 1) * ly2 + per_mat_tosrc.at<double>(0, 2)) /
+		(per_mat_tosrc.at<double>(2, 0) * lx2 + per_mat_tosrc.at<double>(2, 1) * ly2 + per_mat_tosrc.at<double>(2, 2));
+
+	new_ly2 = (per_mat_tosrc.at<double>(1, 0) * lx2 + per_mat_tosrc.at<double>(1, 1) * ly2 + per_mat_tosrc.at<double>(1, 2)) /
+		(per_mat_tosrc.at<double>(2, 0) * lx2 + per_mat_tosrc.at<double>(2, 1) * ly2 + per_mat_tosrc.at<double>(2, 2));
+
+	int new_rx1, new_ry1, new_rx2, new_ry2;
+	new_rx1 = (per_mat_tosrc.at<double>(0, 0) * rx1 + per_mat_tosrc.at<double>(0, 1) * ry1 + per_mat_tosrc.at<double>(0, 2)) /
+		(per_mat_tosrc.at<double>(2, 0) * rx1 + per_mat_tosrc.at<double>(2, 1) * ry1 + per_mat_tosrc.at<double>(2, 2));
+
+	new_ry1 = (per_mat_tosrc.at<double>(1, 0) * rx1 + per_mat_tosrc.at<double>(1, 1) * ry1 + per_mat_tosrc.at<double>(1, 2)) /
+		(per_mat_tosrc.at<double>(2, 0) * rx1 + per_mat_tosrc.at<double>(2, 1) * ry1 + per_mat_tosrc.at<double>(2, 2));
+
+	new_rx2 = (per_mat_tosrc.at<double>(0, 0) * rx2 + per_mat_tosrc.at<double>(0, 1) * ry2 + per_mat_tosrc.at<double>(0, 2)) /
+		(per_mat_tosrc.at<double>(2, 0) * rx2 + per_mat_tosrc.at<double>(2, 1) * ry2 + per_mat_tosrc.at<double>(2, 2));
+
+	new_ry2 = (per_mat_tosrc.at<double>(1, 0) * rx2 + per_mat_tosrc.at<double>(1, 1) * ry2 + per_mat_tosrc.at<double>(1, 2)) /
+		(per_mat_tosrc.at<double>(2, 0) * rx2 + per_mat_tosrc.at<double>(2, 1) * ry2 + per_mat_tosrc.at<double>(2, 2));
+
+	warp_left_line.push_back(cv::Point(new_lx1, new_ly1)); warp_left_line.push_back(cv::Point(new_lx2, new_ly2));
+	warp_right_line.push_back(cv::Point(new_rx1, new_ry1)); warp_right_line.push_back(cv::Point(new_rx2, new_ry2));
+
+
+	line(frame, cv::Point(new_lx1, new_ly1), cv::Point(new_lx2, new_ly2), cv::Scalar(0, 255, 255), 2);
+	line(frame, cv::Point(new_rx1, new_ry1), cv::Point(new_rx2, new_ry2), cv::Scalar(0, 255, 255), 2);
+
+	int offset = 400;
+	int lpos = int((offset - warp_left_line[0].y) * ((warp_left_line[1].x - warp_left_line[0].x) / (warp_left_line[1].y - warp_left_line[0].y)) + warp_left_line[0].x);
+	int rpos = int((offset - warp_right_line[0].y) * ((warp_right_line[1].x - warp_right_line[0].x) / (warp_right_line[1].y - warp_right_line[0].y)) + warp_right_line[0].x);
+	std::vector<cv::Point> pos;
+	pos.push_back(cv::Point(lpos, rpos));
 
 	return;
 }
