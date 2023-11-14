@@ -70,12 +70,14 @@ template <typename PREC>
 void LaneDetector<PREC>::birdEyeViewVthres(const cv::Mat img)
 {
     if(img.empty()){
-        std::cerr << "Error: Not image" << std::endl;
+        std::cerr << "wait" << std::endl;
         return;
     }
-
-    cv::imshow("frame", img);
-    cv::waitKey(33);   
+    else{
+        cv::warpPerspective(img, mBirdEyeImg, mPerMatToDst, cv::Size(mImageWidth, mImageHeight), cv::INTER_LINEAR);
+        cv::imshow("frame", mBirdEyeImg);
+        cv::waitKey(33); 
+    }
 }
 
 template <typename PREC>
