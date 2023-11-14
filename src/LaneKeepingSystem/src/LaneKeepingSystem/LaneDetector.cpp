@@ -75,7 +75,7 @@ void LaneDetector<PREC>::totalFunction(const cv::Mat img)
         std::cerr << "Not img" << std:: endl;
     }
     else{
-        cv::Mat v_thres = cv::Mat::zeros(width, height, CV_8UC1);
+        cv::Mat v_thres = cv::Mat::zeros(mImageWidth, mImageHeight, CV_8UC1);
 
         cv::warpPerspective(img, mBirdEyeImg, mPerMatToDst, cv::Size(mImageWidth, mImageHeight));
         cv::cvtColor(mBirdEyeImg, mHsvImg, cv::COLOR_BGR2HSV);
@@ -91,9 +91,9 @@ void LaneDetector<PREC>::totalFunction(const cv::Mat img)
         cv::GaussianBlur(v_plane, v_plane, cv::Size(), mGausBlurSigma);
         cv::inRange(v_plane, mMinThres, mMaxThres, v_thres);
 
-        cv::polylines(img, pts, true, cv::Scalar(255, 255, 0), 2);
+        cv::polylines(img, mPts, true, cv::Scalar(255, 255, 0), 2);
 		cv::arrowedLine(mBirdEyeImg, cv::Point(mImageWidth / 2, mImageHeight), cv::Point(mImageWidth / 2, mImageHeight - 40), cv::Scalar(255, 0, 255), 3);
-        
+
     }
 }
 
