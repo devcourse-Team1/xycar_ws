@@ -62,6 +62,7 @@ void LaneKeepingSystem<PREC>::run()
         write your code.
         */
         if(!mFrame.empty()){
+            mFrame.convertTo(mFrame, CV_64FC1);
             cv::undistort(mFrame, undistort_mFrame, cameraMatrix, distCoeffs);
             mLaneDetector->yourOwnFunction(undistort_mFrame);
         }
