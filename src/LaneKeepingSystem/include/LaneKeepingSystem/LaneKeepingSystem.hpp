@@ -82,6 +82,11 @@ private:
     // OpenCV Image processing Variables
     cv::Mat mFrame; ///< Image from camera. The raw image is converted into cv::Mat
 
+    // Image calibration
+    cv::Mat undistort_mFrame;
+    cv::Mat cameraMatrix;
+    cv::Mat distCoeffs;
+
     // Xycar Device variables
     PREC mXycarSpeed;                 ///< Current speed of xycar
     PREC mXycarMaxSpeed;              ///< Max speed of xycar
