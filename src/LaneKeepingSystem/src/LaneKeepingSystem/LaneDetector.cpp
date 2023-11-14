@@ -77,7 +77,7 @@ void LaneDetector<PREC>::totalFunction(const cv::Mat img)
     else{
         cv::Mat v_thres = cv::Mat::zeros(mImageWidth, mImageHeight, CV_8UC1);
 
-        cv::warpPerspective(mFrame, mBirdEyeImg, mPerMatToDst, cv::Size(mImageWidth, mImageHeight));
+        cv::warpPerspective(img, mBirdEyeImg, mPerMatToDst, cv::Size(mImageWidth, mImageHeight));
         cv::cvtColor(mBirdEyeImg, mHsvImg, cv::COLOR_BGR2HSV);
         
         std::vector<cv::Mat> hsv_planes;
@@ -120,9 +120,9 @@ void LaneDetector<PREC>::totalFunction(const cv::Mat img)
         int left_mid_point = (left_l_init + left_r_init) / 2;
         int right_mid_point = (right_l_init + right_r_init) / 2;
 
-        numSlidingWindows(left_mid_point, right_mid_point, mBirdEyeImg, v_thres, mImageWidth, mImageHeight, mPerMatToSrc, mFrame);
+        numSlidingWindows(left_mid_point, right_mid_point, mBirdEyeImg, v_thres, mImageWidth, mImageHeight, mPerMatToSrc, img);
 
-        cv::imshow("frame_", mFrame);
+        cv::imshow("frame_", img);
         cv::imshow("check", mBirdEyeImg);
         cv::waitKey(33);
     }
@@ -288,7 +288,6 @@ void LaneDetector<PREC>::numSlidingWindows(const int left_mid, const int right_m
 
 	return;
 }
-
 
 template class LaneDetector<float>;
 template class LaneDetector<double>;
