@@ -11,6 +11,7 @@
  */
 
 #include <numeric>
+#include <opencv2/core/mat.hpp>
 #include <opencv2/imgproc.hpp>
 #include <opencv2/videoio.hpp>
 #include "LaneKeepingSystem/LaneDetector.hpp"
@@ -60,6 +61,8 @@ void LaneDetector<PREC>::setConfiguration(const YAML::Node& config)
     mPerMatToDst = cv::getPerspectiveTransform(mSrcPts, mDstPts);
     mPerMatToSrc = cv::getPerspectiveTransform(mDstPts, mSrcPts);
 
+    mBirdEyeImg = cv::Mat mBirdEyeImg;
+
     mDebugging = config["DEBUG"].as<bool>();
 }
 
@@ -67,24 +70,17 @@ void LaneDetector<PREC>::setConfiguration(const YAML::Node& config)
 Example Function Form
 */
 template <typename PREC>
-cv::Mat LaneDetector<PREC>::Vthres(const cv::Mat img)
+void LaneDetector<PREC>::totalFunction(const cv::Mat img)
 {
-    cv::Mat v_thres = cv::Mat::zeros(mImageWidth, mImageHeight, CV_8UC1);
-    cv::warpPerspective(img, mBirdEyeImg, mPerMatToDst, cv::Size(mImageWidth, mImageHeight), cv::INTER_LINEAR);
-    cv::cvtColor(mBirdEyeImg, mHsvImg, cv::COLOR_BGR2HSV);
-
-    std::vector<cv::Mat> hsv_planes;
-    cv::split(mBirdEyeImg, hsv_planes);
-    cv::Mat v_plane = hsv_planes[2];
-    v_plane = 255 - v_plane;
-
-    int means = mean(v_planes)[2];
-    v_plane = v_plane + (100 - means);
-
-    //cv::GaussianBlur(v_plane, cv)
-
-        
-    return v_thres;
+    if(img.empty()){
+        std::cerr << "Not img" << std:: endl;
+    }
+    else{
+        cv::Mat bird_eye_img
+        cv::warpPerspective(img, bird_eye_img, mPerMatToDst, cv::Size(mImageWidth, mImageHeight));
+        cv::imshow("frame", bird_eye_img);
+        cv::waitKey(33);  
+    }
 }
 
 template <typename PREC>
