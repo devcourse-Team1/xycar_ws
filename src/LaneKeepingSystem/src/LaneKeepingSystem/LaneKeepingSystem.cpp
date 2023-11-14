@@ -37,8 +37,8 @@ void LaneKeepingSystem<PREC>::setParams(const YAML::Node& config)
     double cm[]={config["CALIBRATE"]["fx"].as<double>(), 0., config["CALIBRATE"]["cx"].as<double>(), 0., config["CALIBRATE"]["fy"].as<double>(), config["CALIBRATE"]["cy"].as<double>(), 0., 0., 1. };
     double dm[]={config["CALIBRATE"]["k1"].as<double>(), config["CALIBRATE"]["k2"].as<double>(), config["CALIBRATE"]["p1"].as<double>(), config["CALIBRATE"]["p2"].as<double>(), config["CALIBRATE"]["k3"].as<double>()};
 
-    cameraMatrix = cv::Mat(3, 3, CV_64FC1, (void*)cm);
-    distCoeffs = cv::Mat(1, 5, CV_64FC1, (void*)dm);
+    cameraMatrix = cv::Mat(3, 3, CV_64F, (void*)cm);
+    distCoeffs = cv::Mat(1, 5, CV_64F, (void*)dm);
 
 }
 
@@ -62,7 +62,7 @@ void LaneKeepingSystem<PREC>::run()
         write your code.
         */
         if(!mFrame.empty()){
-            mFrame.convertTo(mFrame, CV_64FC1);
+            mFrame.convertTo(mFrame, CV_64F);
             cv::undistort(mFrame, undistort_mFrame, cameraMatrix, distCoeffs);
             mLaneDetector->yourOwnFunction(undistort_mFrame);
         }
