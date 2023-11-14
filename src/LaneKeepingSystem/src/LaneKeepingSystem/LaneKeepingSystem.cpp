@@ -51,8 +51,7 @@ void LaneKeepingSystem<PREC>::run()
     {
         ros::spinOnce();
         if(!mFrame.empty()){
-            mLaneDetector->birdEyeViewVthres(mFrame);
-
+            mLaneDetector->totalFunction(mFrame);
         }
     }
 }

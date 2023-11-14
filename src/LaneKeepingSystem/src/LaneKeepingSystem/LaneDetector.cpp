@@ -61,8 +61,6 @@ void LaneDetector<PREC>::setConfiguration(const YAML::Node& config)
     mPerMatToDst = cv::getPerspectiveTransform(mSrcPts, mDstPts);
     mPerMatToSrc = cv::getPerspectiveTransform(mDstPts, mSrcPts);
 
-    mBirdEyeImg = cv::Mat mBirdEyeImg;
-
     mDebugging = config["DEBUG"].as<bool>();
 }
 
@@ -76,10 +74,8 @@ void LaneDetector<PREC>::totalFunction(const cv::Mat img)
         std::cerr << "Not img" << std:: endl;
     }
     else{
-        cv::Mat bird_eye_img
-        cv::warpPerspective(img, bird_eye_img, mPerMatToDst, cv::Size(mImageWidth, mImageHeight));
-        cv::imshow("frame", bird_eye_img);
-        cv::waitKey(33);  
+        cv::warpPerspective(img, mBirdEyeImg, mPerMatToDst, cv::Size(mImageWidth, mImageHeight));
+  
     }
 }
 
@@ -89,10 +85,7 @@ void LaneDetector<PREC>::yourOwnFunction(const cv::Mat img)
     // write your code.
     // &
     // you must specify your own function to your LaneDetector.hpp file.
-    if(!img.empty()){
-        cv::imshow("frame", img);
-        cv::waitKey(33);   
-    }
+
 }
 
 
