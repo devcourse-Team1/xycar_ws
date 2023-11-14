@@ -49,7 +49,7 @@ private:
 
     float mGausBlurSigma;
 
-    cv::Mat mBirdEyeImg, mHsvImg, mGausImg;
+    cv::Mat mFrame, mBirdEyeImg, mHsvImg, mGausImg;
     cv::Mat mPerMatToDst, mPerMatToSrc;
     
     std::vector<cv::Point2f> mSrcPts, mDstPts;

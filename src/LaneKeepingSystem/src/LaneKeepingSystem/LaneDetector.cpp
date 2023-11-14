@@ -60,7 +60,7 @@ void LaneDetector<PREC>::setConfiguration(const YAML::Node& config)
 
     mPerMatToDst = cv::getPerspectiveTransform(mSrcPts, mDstPts);
     mPerMatToSrc = cv::getPerspectiveTransform(mDstPts, mSrcPts);
-    cv::Mat mBirdEyeImg, mHsvImg, mGausImg;
+    cv::Mat mFrame, mBirdEyeImg, mHsvImg, mGausImg;
 
     mDebugging = config["DEBUG"].as<bool>();
 }
@@ -94,6 +94,7 @@ void LaneDetector<PREC>::totalFunction(const cv::Mat img)
         cv::polylines(img, mPts, true, cv::Scalar(255, 255, 0), 2);
 		cv::arrowedLine(mBirdEyeImg, cv::Point(mImageWidth / 2, mImageHeight), cv::Point(mImageWidth / 2, mImageHeight - 40), cv::Scalar(255, 0, 255), 3);
 
+        
     }
 }
 
