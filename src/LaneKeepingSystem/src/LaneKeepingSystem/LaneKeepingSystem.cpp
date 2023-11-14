@@ -50,11 +50,10 @@ void LaneKeepingSystem<PREC>::run()
     while (ros::ok())
     {
         ros::spinOnce();
-        /*
-        write your code.
-        */
-        //mLaneDetector->yourOwnFunction(mFrame);
-        mLaneDetector->birdEyeViewVthres(mFrame);
+        if(!mFrame.empty()){
+            mLaneDetector->birdEyeViewVthres(mFrame);
+
+        }
     }
 }
 
