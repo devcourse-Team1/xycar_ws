@@ -69,15 +69,25 @@ Example Function Form
 template <typename PREC>
 void LaneDetector<PREC>::birdEyeViewVthres(const cv::Mat img)
 {
-    if(img.empty()){
-        std::cerr << "wait" << std::endl;
-        return;
-    }
-    else{
+    if(!img.empty()){
+        cv::Mat v_thres = cv::Mat::zeros(mImageWidth, mImageHeight, CV_8UC1);
         cv::warpPerspective(img, mBirdEyeImg, mPerMatToDst, cv::Size(mImageWidth, mImageHeight), cv::INTER_LINEAR);
+        cv::cvtColor(mBirdEyeImg, mHsvImg, cv::COLOR_BGR2HSV);
+
+        std::vector<cv::Mat> hsv_planes;
+        cv::split(mBirdEyeImg, hsv_planes);
+        cv::Mat v_plane = hsv_planes[2];
+        v_plane = 255 - v_plane;
+
+        int means = mean(v_planes)[2];
+        v_plane = v_plane + (100 - means);
+
+        //cv::GaussianBlur(v_plane, cv)
+
         cv::imshow("frame", img);
         cv::imshow("frame", mBirdEyeImg);
         cv::waitKey(33); 
+        
     }
 }
 
