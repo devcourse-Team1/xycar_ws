@@ -75,6 +75,7 @@ void LaneDetector<PREC>::birdEyeViewVthres(const cv::Mat img)
     }
     else{
         cv::warpPerspective(img, mBirdEyeImg, mPerMatToDst, cv::Size(mImageWidth, mImageHeight), cv::INTER_LINEAR);
+        cv::imshow("frame", img);
         cv::imshow("frame", mBirdEyeImg);
         cv::waitKey(33); 
     }
