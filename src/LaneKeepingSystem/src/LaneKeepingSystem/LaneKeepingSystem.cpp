@@ -52,9 +52,9 @@ void LaneKeepingSystem<PREC>::run()
         ros::spinOnce();
         if(!mFrame.empty()){
             mLaneDetector->totalFunction(mFrame);
+            speedControl(5);
+            drive(0);
         }
-        speedControl(5);
-        drive(0);
     }
 }
 
