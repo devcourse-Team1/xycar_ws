@@ -132,8 +132,8 @@ template <typename PREC>
 void LaneDetector<PREC>::numSlidingWindows(const int left_mid, const int right_mid, const cv::Mat roi, const cv::Mat v_thres,
                             const int w, const int h, const cv::Mat per_mat_tosrc, const cv::Mat frame)
 {
-	// define constant for sliding window
 	int n_windows = 12;
+    std::vector<std::pair<double, double>> total_points(n_windows);
 	int window_height = static_cast<int>(h / n_windows);
 	int window_width = static_cast<int>(w / n_windows * 1.2);
 	int margin = window_width >> 1;
@@ -155,7 +155,6 @@ void LaneDetector<PREC>::numSlidingWindows(const int left_mid, const int right_m
 	r_points[0] = cv::Point(right_mid_point, static_cast<int>((win_y_high + win_y_low) >> 1));
 	m_points[0] = cv::Point(static_cast<int>((left_mid_point + right_mid_point) >> 1), static_cast<int>((win_y_high + win_y_low) >> 1));
 
-	// window search start, i drew the init box at the bottom, so i start from 1 to n_windows
 	for (int window = 0; window < n_windows; window++) {
 
 		win_y_high = h - (window + 1) * window_height;
@@ -169,14 +168,12 @@ void LaneDetector<PREC>::numSlidingWindows(const int left_mid, const int right_m
 		int pixel_thres = window_width * 0.1;
 		int ll = 0, lr = 0; int rl = w, rr = w;
 		
-		int li = 0; // nonzero가 몇개인지 파악하기 위한 벡터에 사용될 인자
-		// window의 위치를 고려해서 벡터에 집어넣으면 불필요한 부분이 많아질 수 있다. 어차피 0의 개수를 구하기 위한 벡터이므로 0부터 window_width+1 개수만큼 생성
-		std::vector<int> lhigh_vector(window_width + 1); // nonzero가 몇개 인지 파악할 때 사용할 벡터
+		int li = 0;
+		std::vector<int> lhigh_vector(window_width + 1);
 		for (auto x = win_x_leftb_left; x < win_x_leftb_right; x++) {
 			li++;
 			lhigh_vector[li] = v_thres.at<uchar>(offset, x);
 
-			// 차선의 중앙을 계산하기 위해 255 시작점과 255 끝점을 계산
 			if (v_thres.at<uchar>(offset, x) == 255 && ll == 0) {
 				ll = x;
 				lr = x;
@@ -186,8 +183,7 @@ void LaneDetector<PREC>::numSlidingWindows(const int left_mid, const int right_m
 			}
 		}
 
-		int ri = 0;// nonzero가 몇개인지 파악하기 위한 벡터에 사용될 인자
-		// window의 위치를 고려해서 벡터에 집어넣으면 불필요한 부분이 많아질 수 있다. 어차피 0의 개수를 구하기 위한 벡터이므로 0부터 window_width+1 개수만큼 생성
+		int ri = 0;
 		std::vector<int> rhigh_vector(window_width + 1);
 		for (auto x = win_x_rightb_left; x < win_x_rightb_right; x++) {
 			ri++;
@@ -201,11 +197,9 @@ void LaneDetector<PREC>::numSlidingWindows(const int left_mid, const int right_m
 			}
 		}
 
-		// window안에서 0이 아닌 픽셀의 개수를 구함
 		int lnonzero = cv::countNonZero(lhigh_vector);
 		int rnonzero = cv::countNonZero(rhigh_vector);
 
-		// 방금 구했던 255 픽셀 시작 지점과 끝 지점의 중앙 값을 다음 sliding_window의 중앙으로 잡는다.
 		if (lnonzero >= pixel_thres) {
 			left_mid_point = (ll + lr) >> 1;
 		}
@@ -213,13 +207,11 @@ void LaneDetector<PREC>::numSlidingWindows(const int left_mid, const int right_m
 			right_mid_point = (rl + rr) >> 1;
 		}
 
-		// 차선 중앙과 탐지한 차선과의 거리 측정
 		int lane_mid = (right_mid_point + left_mid_point) >> 1;
 		int left_diff = lane_mid - left_mid_point;
 		int right_diff = -(lane_mid - right_mid_point);
 
 #if 1
-		// 한쪽 차선의 nonzero가 임계값을 넘지 못할 경우 중간을 기점으로 반대편 차선 위치를 기준으로 대칭
 		if (lnonzero < pixel_thres && rnonzero > pixel_thres) {
 			lane_mid = right_mid_point - right_diff;
 			left_mid_point = lane_mid - right_diff;
@@ -229,7 +221,6 @@ void LaneDetector<PREC>::numSlidingWindows(const int left_mid, const int right_m
 			right_mid_point = lane_mid + left_diff;
 		}
 #else
-		// 지난 프레임에서의 픽셀값을 기억하고 nonzero가 임계값을 넘지 못할 경우 지난 프레임의 해당 윈도우 번호의 값을 불러옴
 		if (lnonzero < pixel_thres && rnonzero > pixel_thres) {
 			left_mid_point = l_points[window].x;
 			lane_mid = (right_mid_point + left_mid_point) / 2;
@@ -240,7 +231,6 @@ void LaneDetector<PREC>::numSlidingWindows(const int left_mid, const int right_m
 		}
 
 #endif
-		// draw window at v_thres
 		rectangle(roi, cv::Rect(win_x_leftb_left, win_y_high, window_width, window_height), cv::Scalar(0, 150, 0), 2);
 		rectangle(roi, cv::Rect(win_x_rightb_left, win_y_high, window_width, window_height), cv::Scalar(150, 0, 0), 2);
 
@@ -252,11 +242,10 @@ void LaneDetector<PREC>::numSlidingWindows(const int left_mid, const int right_m
 
 	cv::Vec4f left_line, right_line, mid_line;
 	
-	cv::fitLine(l_points, left_line, cv::DIST_L2, 0, 0.01, 0.01); // 출력의 0,1 번째 인자는 단위벡터, 3,4번째 인자는 선 위의 한 점
+	cv::fitLine(l_points, left_line, cv::DIST_L2, 0, 0.01, 0.01);
 	cv::fitLine(r_points, right_line, cv::DIST_L2, 0, 0.01, 0.01);
 	cv::fitLine(m_points, mid_line, cv::DIST_L2, 0, 0.01, 0.01);
 
-	// 방향이 항상 아래를 향하도록 만들기 위해 단위 벡터의 방향을 바꿔준다.
 	if (left_line[1] > 0) {
 		left_line[1] = -left_line[1];
 	}
@@ -267,8 +256,8 @@ void LaneDetector<PREC>::numSlidingWindows(const int left_mid, const int right_m
 		mid_line[1] = mid_line[1];
 	}
 
-	int lx0 = left_line[2], ly0 = left_line[3]; // 선 위의 한 점
-	int lx1 = lx0 + h / 2 * left_line[0], ly1 = ly0 + h / 2 * left_line[1]; // 단위 벡터 -> 그리고자 하는 길이를 빼주거나 더해줌
+	int lx0 = left_line[2], ly0 = left_line[3];
+	int lx1 = lx0 + h / 2 * left_line[0], ly1 = ly0 + h / 2 * left_line[1];
 	int lx2 = 2 * lx0 - lx1, ly2 = 2 * ly0 - ly1;
 
 	int rx0 = right_line[2], ry0 = right_line[3];

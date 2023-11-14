@@ -53,6 +53,8 @@ void LaneKeepingSystem<PREC>::run()
         if(!mFrame.empty()){
             mLaneDetector->totalFunction(mFrame);
         }
+        speedControl(5);
+        drive(0);
     }
 }
 
