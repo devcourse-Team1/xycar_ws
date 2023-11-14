@@ -57,7 +57,7 @@ cv::Mat LaneDetector<PREC>::regionOfInterest(cv::Mat src)
 template <typename PREC>
 std::pair<double, double> LaneDetector<PREC>::calculatePoints(std::pair<double, double> prev_result, std::vector<cv::Vec4i> lines)
 {
-    std::vector<double> results;
+    std::vector<double> results, rightResults, leftResults;
     std::pair<double, double> cur_result;
     const int pos_threshold = 50;
     double mpoint(0);
@@ -69,31 +69,51 @@ std::pair<double, double> LaneDetector<PREC>::calculatePoints(std::pair<double, 
         int x2(line[2]);
         int y2(line[3]);
 
-        double slope = (y2 - y1) / (double)(x2 - x1);
+        double slope = static_cast<double>(y2 - y1) / static_cast<double>((x2 - x1);
         double y_intercept = (x2 * y1 - x1 * y2) / (double)(x2 - x1);
         // (TODO) decide threshold to get rid of outlier
         // if (slope > l_slope_threshold || slope < r_slope_threshold) {
         // 		continue;
         // }
 
-        mpoint = (mYOffset - y_intercept) / (double)slope;
-        results.push_back(mpoint);
+        
+        mpoint = static_cast<double>(mYOffset - y_intercept) / slope;
+
+        if(slope > 0.5){
+            rightResults.push_back(mpoint);
+        }else if (slope < -0.5){
+            leftResults.push_back(mpoint);
+        }
+        // results.push_back(mpoint);
     }
 
     double lpos(0.0), rpos(0.0), lcnt(0.0), rcnt(0.0);
-    for (double result : results)
+    // for (double result : results)
+    // {
+    //     if (result <= (mImageWidth / 2))
+    //     {
+    //         lpos += result;
+    //         lcnt++;
+    //     }
+    //     else
+    //     {
+    //         rpos += result;
+    //         rcnt++;
+    //     }
+    // }
+
+    for (double result : leftResults)
     {
-        if (result <= (mImageWidth / 2))
-        {
-            lpos += result;
-            lcnt++;
-        }
-        else
-        {
-            rpos += result;
-            rcnt++;
-        }
+        lpos += result;
+        lcnt++;
     }
+
+    for (double result : rightResults)
+    {
+        rpos += result;
+        rcnt++;
+    }
+    
     cur_result = std::make_pair(lpos / (double)lcnt, rpos / (double)rcnt);
 
     if (isnan(cur_result.first) == 1)
