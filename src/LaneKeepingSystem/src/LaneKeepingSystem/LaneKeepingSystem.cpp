@@ -65,8 +65,8 @@ void LaneKeepingSystem<PREC>::run(std::pair<double, double> prev_result)
 
         std::cout << "filtering_result : " << filtering_result << "\n";
 
-        // speedControl((filtering_result));
-        // drive((filtering_result));
+        speedControl((filtering_result));
+        drive((filtering_result));
     }
 }
 

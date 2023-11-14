@@ -71,10 +71,8 @@ std::pair<double, double> LaneDetector<PREC>::calculatePoints(std::pair<double, 
         int y2(line[3]);
 
         double slope = (y2 - y1) / (double)(x2 - x1);
-        std::cout << "slope : " << slope << "\n";
         double y_intercept = (x2 * y1 - x1 * y2) / (double)(x2 - x1);
         mpoint = (mYOffset - y_intercept) / (double)slope;
-        std::cout << "mpoint : " << mpoint << "\n";
 
         if (slope < -0.1)
         {
@@ -92,14 +90,13 @@ std::pair<double, double> LaneDetector<PREC>::calculatePoints(std::pair<double, 
         lpos += lresult;
         lcnt++;
     }
-    for (double rresult : lresults)
+    for (double rresult : rresults)
     {
         rpos += rresult;
         rcnt++;
     }
 
     cur_result = std::make_pair(lpos / (double)lcnt, rpos / (double)rcnt);
-    std::cout << "cur_result : " << cur_result.first << ", " << cur_result.second << "\n";
 
     if (isnan(cur_result.first) == 1)
     {
@@ -115,11 +112,6 @@ std::pair<double, double> LaneDetector<PREC>::calculatePoints(std::pair<double, 
     if ((abs(prev_result.first - cur_result.first) < pos_threshold) || (abs(prev_result.second - cur_result.second) < pos_threshold))
     {
         prev_result = cur_result;
-    }
-    else
-    {
-        std::cout << "lpos diff : " << abs(prev_result.first - cur_result.first) << "\n";
-        std::cout << "rpos diff : " << abs(prev_result.second - cur_result.second) << "\n";
     }
 
     lresults.clear();
@@ -151,7 +143,6 @@ std::pair<double, std::pair<double, double>> LaneDetector<PREC>::Hough(const cv:
         }
 
         mresult = calculatePoints(prev_result, lines);
-        // std::cout << "result : " << mresult.first << ", " << mresult.second << "\n";
 
         // Draw a line and points using calculated results
         line(src, cv::Point(0, mYOffset), cv::Point(mImageWidth, mYOffset), kRed, 1, cv::LINE_AA);
