@@ -44,6 +44,8 @@ void LaneDetector<PREC>::setConfiguration(const YAML::Node& config)
     mDstPoint_Y2 = config["IMAGE"]["DSTPT_Y2"].as<int32_t>();
     mDstPoint_Y3 = config["IMAGE"]["DSTPT_Y3"].as<int32_t>();
 
+	mPosDiff = 0;
+
     mGausBlurSigma = config["IMAGE"]["BLURSIGMA"].as<float>();
 
     std::vector<cv::Point2f> mSrcPts(4), mDstPts(4);
@@ -69,7 +71,7 @@ void LaneDetector<PREC>::setConfiguration(const YAML::Node& config)
 Example Function Form
 */
 template <typename PREC>
-void LaneDetector<PREC>::totalFunction(const cv::Mat img)
+int LaneDetector<PREC>::totalFunction(const cv::Mat img)
 {
     if(img.empty()){
         std::cerr << "Not img" << std:: endl;
@@ -120,19 +122,22 @@ void LaneDetector<PREC>::totalFunction(const cv::Mat img)
         int left_mid_point = (left_l_init + left_r_init) / 2;
         int right_mid_point = (right_l_init + right_r_init) / 2;
 
-        numSlidingWindows(left_mid_point, right_mid_point, mBirdEyeImg, v_thres, mImageWidth, mImageHeight, mPerMatToSrc, img);
+        mPosDiff = numSlidingWindows(left_mid_point, right_mid_point, mBirdEyeImg, v_thres, mImageWidth, mImageHeight, mPerMatToSrc, img);
+		mPosDiff -= (mImageWidth / 2);
 
         cv::imshow("frame_", img);
         cv::imshow("check", mBirdEyeImg);
         cv::waitKey(33);
     }
+	return mPosDiff;
 }
 
 template <typename PREC>
-void LaneDetector<PREC>::numSlidingWindows(const int left_mid, const int right_mid, const cv::Mat roi, const cv::Mat v_thres,
+int LaneDetector<PREC>::numSlidingWindows(const int left_mid, const int right_mid, const cv::Mat roi, const cv::Mat v_thres,
                             const int w, const int h, const cv::Mat per_mat_tosrc, const cv::Mat frame)
 {
 	int n_windows = 12;
+	int pos_diff = 0;
     std::vector<std::pair<double, double>> total_points(n_windows);
 	int window_height = static_cast<int>(h / n_windows);
 	int window_width = static_cast<int>(w / n_windows * 1.2);
@@ -238,7 +243,9 @@ void LaneDetector<PREC>::numSlidingWindows(const int left_mid, const int right_m
 		m_points[window] = cv::Point(lane_mid, static_cast<int>((win_y_high + win_y_low) >> 1));
 		l_points[window] = cv::Point(left_mid_point, static_cast<int>((win_y_high + win_y_low) >> 1));
 		r_points[window] = cv::Point(right_mid_point, static_cast<int>((win_y_high + win_y_low) >> 1));
-	}
+
+		pos_diff += lane_mid;
+	} //end for
 
 	cv::Vec4f left_line, right_line, mid_line;
 	
@@ -275,7 +282,8 @@ void LaneDetector<PREC>::numSlidingWindows(const int left_mid, const int right_m
 	std::vector<cv::Point> warp_left_line(2), warp_right_line(2), pos;
     matrix_oper_pos(frame, mPerMatToSrc, lx1, ly1, lx2, ly2, rx1, ry1, rx2, ry2);
 
-	return;
+	pos_diff = pos_diff / n_windows;
+	return pos_diff;
 }
 
 template <typename PREC>

@@ -33,6 +33,7 @@ void LaneKeepingSystem<PREC>::setParams(const YAML::Node& config)
     mAccelerationStep = config["XYCAR"]["ACCELERATION_STEP"].as<PREC>();
     mDecelerationStep = config["XYCAR"]["DECELERATION_STEP"].as<PREC>();
     mDebugging = config["DEBUG"].as<bool>();
+    mPos = 0;
 }
 
 template <typename PREC>
@@ -51,9 +52,9 @@ void LaneKeepingSystem<PREC>::run()
     {
         ros::spinOnce();
         if(!mFrame.empty()){
-            mLaneDetector->totalFunction(mFrame);
-            speedControl(5);
-            drive(0);
+            mPos = mLaneDetector->totalFunction(mFrame);
+            speedControl(mPos);
+            drive(mPos);
         }
     }
 }
