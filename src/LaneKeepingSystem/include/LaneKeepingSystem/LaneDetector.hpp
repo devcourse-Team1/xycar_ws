@@ -52,7 +52,7 @@ private:
 
     int mPosDiff;
 
-    cv::Mat mFrame, mBirdEyeImg, mHsvImg, mGausImg;
+    cv::Mat mFrame, mBirdEyeImg, mHsvImg, mGausImg, mErodeImg;
     cv::Mat mPerMatToDst, mPerMatToSrc;
     
     std::vector<cv::Point2f> mSrcPts, mDstPts;

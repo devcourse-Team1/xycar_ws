@@ -62,7 +62,7 @@ void LaneDetector<PREC>::setConfiguration(const YAML::Node& config)
 
     mPerMatToDst = cv::getPerspectiveTransform(mSrcPts, mDstPts);
     mPerMatToSrc = cv::getPerspectiveTransform(mDstPts, mSrcPts);
-    cv::Mat mFrame, mBirdEyeImg, mHsvImg, mGausImg;
+    cv::Mat mFrame, mBirdEyeImg, mHsvImg, mGausImg, mErodeImg;
 
     mDebugging = config["DEBUG"].as<bool>();
 }
@@ -92,6 +92,8 @@ int LaneDetector<PREC>::totalFunction(const cv::Mat img)
 
         cv::GaussianBlur(v_plane, v_plane, cv::Size(), mGausBlurSigma);
         cv::inRange(v_plane, mMinThres, mMaxThres, v_thres);
+		cv::morphologyEx(v_thres, mErodeImg, cv::MORPH_OPEN, cv::Mat(), cv::Point(-1, -1), 4);
+		//cv::morphologyEx(v_thres, mErodeImg, cv::MORPH_ERODE, cv::Mat(), cv::Point(-1, -1), 4);
 
 		cv::arrowedLine(mBirdEyeImg, cv::Point(mImageWidth / 2, mImageHeight), cv::Point(mImageWidth / 2, mImageHeight - 40), cv::Scalar(255, 0, 255), 3);
 
@@ -100,20 +102,20 @@ int LaneDetector<PREC>::totalFunction(const cv::Mat img)
 
         for(int x = 0; x < mImageWidth; x++){
             if(x < mImageWidth / 2){
-                if(v_thres.at<uchar>(mImageHeight - 1, x) == 255 && left_l_init == 0){
+                if(mErodeImg.at<uchar>(mImageHeight - 1, x) == 255 && left_l_init == 0){
                     left_l_init = x;
                     left_r_init = x;
                 }
-				if (v_thres.at<uchar>(mImageHeight - 1, x) == 255 && left_r_init != 0) {
+				if (mErodeImg.at<uchar>(mImageHeight - 1, x) == 255 && left_r_init != 0) {
 					left_r_init = x;
 				}
 			}
 			else{
-				if (v_thres.at<uchar>(mImageHeight - 1, x) == 255 && right_l_init == 640) {
+				if (mErodeImg.at<uchar>(mImageHeight - 1, x) == 255 && right_l_init == 640) {
 					right_l_init = x;
 					right_r_init = x;
 				}
-				if (v_thres.at<uchar>(mImageHeight - 1, x) == 255 && right_r_init != 640) {
+				if (mErodeImg.at<uchar>(mImageHeight - 1, x) == 255 && right_r_init != 640) {
 					right_l_init = x;
 				}
 			}
@@ -122,11 +124,14 @@ int LaneDetector<PREC>::totalFunction(const cv::Mat img)
         int left_mid_point = (left_l_init + left_r_init) / 2;
         int right_mid_point = (right_l_init + right_r_init) / 2;
 
-        mPosDiff = numSlidingWindows(left_mid_point, right_mid_point, mBirdEyeImg, v_thres, mImageWidth, mImageHeight, mPerMatToSrc, img);
+        mPosDiff = numSlidingWindows(left_mid_point, right_mid_point, mBirdEyeImg, mErodeImg, mImageWidth, mImageHeight, mPerMatToSrc, img);
 		mPosDiff -= (mImageWidth / 2);
 
         cv::imshow("frame_", img);
         cv::imshow("check", mBirdEyeImg);
+		// cv::imshow("v_thres", v_thres);
+		// cv::imshow("open", mErodeImg);
+
         cv::waitKey(33);
     }
 	return mPosDiff;
@@ -216,34 +221,34 @@ int LaneDetector<PREC>::numSlidingWindows(const int left_mid, const int right_mi
 		int left_diff = lane_mid - left_mid_point;
 		int right_diff = -(lane_mid - right_mid_point);
 
-#if 1
-		if (lnonzero < pixel_thres && rnonzero > pixel_thres) {
-			lane_mid = right_mid_point - right_diff;
-			left_mid_point = lane_mid - right_diff;
-		}
-		else if (lnonzero > pixel_thres && rnonzero < pixel_thres) {
-			lane_mid = left_mid_point + left_diff;
-			right_mid_point = lane_mid + left_diff;
-		}
-#else
-		if (lnonzero < pixel_thres && rnonzero > pixel_thres) {
-			left_mid_point = l_points[window].x;
-			lane_mid = (right_mid_point + left_mid_point) / 2;
-		}
-		else if (lnonzero > pixel_thres && rnonzero < pixel_thres && r_points[window].x != 0) {
-			right_mid_point = r_points[window].x;
-			lane_mid = (right_mid_point + left_mid_point) / 2;
-		}
+		#if 1
+			if (lnonzero < pixel_thres && rnonzero > pixel_thres) {
+				lane_mid = right_mid_point - right_diff;
+				left_mid_point = lane_mid - right_diff;
+			}
+			else if (lnonzero > pixel_thres && rnonzero < pixel_thres) {
+				lane_mid = left_mid_point + left_diff;
+				right_mid_point = lane_mid + left_diff;
+			}
+		#else
+			if (lnonzero < pixel_thres && rnonzero > pixel_thres) {
+				left_mid_point = l_points[window].x;
+				lane_mid = (right_mid_point + left_mid_point) / 2;
+			}
+			else if (lnonzero > pixel_thres && rnonzero < pixel_thres && r_points[window].x != 0) {
+				right_mid_point = r_points[window].x;
+				lane_mid = (right_mid_point + left_mid_point) / 2;
+			}
 
-#endif
-		rectangle(roi, cv::Rect(win_x_leftb_left, win_y_high, window_width, window_height), cv::Scalar(0, 150, 0), 2);
-		rectangle(roi, cv::Rect(win_x_rightb_left, win_y_high, window_width, window_height), cv::Scalar(150, 0, 0), 2);
+		#endif
+			rectangle(roi, cv::Rect(win_x_leftb_left, win_y_high, window_width, window_height), cv::Scalar(0, 150, 0), 2);
+			rectangle(roi, cv::Rect(win_x_rightb_left, win_y_high, window_width, window_height), cv::Scalar(150, 0, 0), 2);
 
 
-		m_points[window] = cv::Point(lane_mid, static_cast<int>((win_y_high + win_y_low) >> 1));
-		l_points[window] = cv::Point(left_mid_point, static_cast<int>((win_y_high + win_y_low) >> 1));
-		r_points[window] = cv::Point(right_mid_point, static_cast<int>((win_y_high + win_y_low) >> 1));
-
+			m_points[window] = cv::Point(lane_mid, static_cast<int>((win_y_high + win_y_low) >> 1));
+			l_points[window] = cv::Point(left_mid_point, static_cast<int>((win_y_high + win_y_low) >> 1));
+			r_points[window] = cv::Point(right_mid_point, static_cast<int>((win_y_high + win_y_low) >> 1));
+		
 		pos_diff += lane_mid;
 	} //end for
 
