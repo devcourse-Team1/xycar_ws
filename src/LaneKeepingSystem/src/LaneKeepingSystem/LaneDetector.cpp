@@ -69,10 +69,13 @@ Example Function Form
 template <typename PREC>
 void LaneDetector<PREC>::birdEyeViewVthres(const cv::Mat img)
 {
-    if(!img.empty()){
-        cv::imshow("frame", img);
-        cv::waitKey(33);   
+    if(img.empty()){
+        std::cerr << "Error: Not image" << std::endl;
+        return;
     }
+
+    cv::imshow("frame", img);
+    cv::waitKey(33);   
 }
 
 template <typename PREC>
