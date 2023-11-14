@@ -56,7 +56,6 @@ void LaneKeepingSystem<PREC>::run(std::pair<double, double> prev_result)
         std::pair<double, std::pair<double, double>> result;
         int32_t pos_diff;
         PREC filtering_result;
-        // mLaneDetector->yourOwnFunction(mFrame);
         result = mLaneDetector->Hough(mFrame, prev_result);
         pos_diff = result.first;
         prev_result = result.second;
@@ -66,8 +65,8 @@ void LaneKeepingSystem<PREC>::run(std::pair<double, double> prev_result)
 
         std::cout << "filtering_result : " << filtering_result << "\n";
 
-        speedControl((filtering_result / 2));
-        drive((filtering_result / 2));
+        // speedControl((filtering_result));
+        // drive((filtering_result));
     }
 }
 

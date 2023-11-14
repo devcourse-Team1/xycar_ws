@@ -1,7 +1,7 @@
 IMAGE:
   WIDTH: 640
   HEIGHT: 480
-  Y_OFFSET: 440
+  Y_OFFSET: 450
   # find your ROI parameter.
 
 XYCAR:

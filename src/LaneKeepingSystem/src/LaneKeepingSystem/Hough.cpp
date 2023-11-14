@@ -41,7 +41,7 @@ cv::Mat LaneDetector<PREC>::regionOfInterest(cv::Mat src)
 {
     cv::Mat src_roi;
 
-    const int x = 300;
+    const int x = 320;
 
     const cv::Point p1(0, mYOffset - 10), p2(x, mYOffset + 10);
     const cv::Point p3(mImageWidth - x, mYOffset - 10), p4(mImageWidth, mYOffset + 10);
@@ -57,10 +57,11 @@ cv::Mat LaneDetector<PREC>::regionOfInterest(cv::Mat src)
 template <typename PREC>
 std::pair<double, double> LaneDetector<PREC>::calculatePoints(std::pair<double, double> prev_result, std::vector<cv::Vec4i> lines)
 {
-    std::vector<double> results;
+    std::vector<double> lresults;
+    std::vector<double> rresults;
     std::pair<double, double> cur_result;
-    const int pos_threshold = 50;
-    double mpoint(0);
+    const int pos_threshold = 30;
+    double mpoint(0.0);
 
     for (cv::Vec4i line : lines)
     {
@@ -70,31 +71,35 @@ std::pair<double, double> LaneDetector<PREC>::calculatePoints(std::pair<double, 
         int y2(line[3]);
 
         double slope = (y2 - y1) / (double)(x2 - x1);
+        std::cout << "slope : " << slope << "\n";
         double y_intercept = (x2 * y1 - x1 * y2) / (double)(x2 - x1);
-        // (TODO) decide threshold to get rid of outlier
-        // if (slope > l_slope_threshold || slope < r_slope_threshold) {
-        // 		continue;
-        // }
-
         mpoint = (mYOffset - y_intercept) / (double)slope;
-        results.push_back(mpoint);
+        std::cout << "mpoint : " << mpoint << "\n";
+
+        if (slope < -0.1)
+        {
+            lresults.push_back(mpoint);
+        }
+        if (slope > 0.1)
+        {
+            rresults.push_back(mpoint);
+        }
     }
 
     double lpos(0.0), rpos(0.0), lcnt(0.0), rcnt(0.0);
-    for (double result : results)
+    for (double lresult : lresults)
     {
-        if (result <= (mImageWidth / 2))
-        {
-            lpos += result;
-            lcnt++;
-        }
-        else
-        {
-            rpos += result;
-            rcnt++;
-        }
+        lpos += lresult;
+        lcnt++;
     }
+    for (double rresult : lresults)
+    {
+        rpos += rresult;
+        rcnt++;
+    }
+
     cur_result = std::make_pair(lpos / (double)lcnt, rpos / (double)rcnt);
+    std::cout << "cur_result : " << cur_result.first << ", " << cur_result.second << "\n";
 
     if (isnan(cur_result.first) == 1)
     {
@@ -109,12 +114,16 @@ std::pair<double, double> LaneDetector<PREC>::calculatePoints(std::pair<double, 
 
     if ((abs(prev_result.first - cur_result.first) < pos_threshold) || (abs(prev_result.second - cur_result.second) < pos_threshold))
     {
-        std::cout << "lpos diff : " << abs(prev_result.first - cur_result.first) << "\n";
-        std::cout << "rpos diff : " << abs(prev_result.second - cur_result.second) << "\n";
         prev_result = cur_result;
     }
+    else
+    {
+        std::cout << "lpos diff : " << abs(prev_result.first - cur_result.first) << "\n";
+        std::cout << "rpos diff : " << abs(prev_result.second - cur_result.second) << "\n";
+    }
 
-    results.clear();
+    lresults.clear();
+    rresults.clear();
 
     return prev_result;
 }
@@ -152,11 +161,6 @@ std::pair<double, std::pair<double, double>> LaneDetector<PREC>::Hough(const cv:
         circle(src, cv::Point(mImageWidth / 2, mYOffset), 3, kGreen, -1, cv::LINE_AA, 0);
 
         double pos_diff = ((mresult.first + mresult.second) / 2) - (mImageWidth / 2);
-
-        int fourcc = cv::VideoWriter::fourcc('D', 'I', 'V', 'X');
-        bool isColor = true;
-
-        cv::VideoWriter outputVideo("../../output.avi", fourcc, 33, cv::Size(mImageWidth, mImageHeight), isColor);
 
         imshow("roi result", src_roi);
         imshow("result", src);
