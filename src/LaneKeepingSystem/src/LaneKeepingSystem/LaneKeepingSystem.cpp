@@ -53,8 +53,8 @@ void LaneKeepingSystem<PREC>::run()
         /*
         write your code.
         */
-        mLaneDetector->yourOwnFunction(mFrame);
-        //mLaneDetector->birdEyeViewVthres(mFrame);
+        //mLaneDetector->yourOwnFunction(mFrame);
+        mLaneDetector->birdEyeViewVthres(mFrame);
     }
 }
 
