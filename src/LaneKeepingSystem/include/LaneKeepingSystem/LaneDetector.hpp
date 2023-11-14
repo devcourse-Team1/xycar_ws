@@ -20,7 +20,8 @@ public:
 
     LaneDetector(const YAML::Node& config) {setConfiguration(config);}
     void totalFunction(const cv::Mat img);
-    void yourOwnFunction(const cv::Mat img);
+    void numSlidingWindows(const int left_mid_point, const int right_mid_point, const cv::Mat roi, const cv::Mat v_thres,
+                            const int w, const int h, const cv::Mat per_mat_tosrc, const cv::Mat frame);
 
 
 private:
