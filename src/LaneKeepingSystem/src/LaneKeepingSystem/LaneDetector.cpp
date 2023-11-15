@@ -182,14 +182,14 @@ int LaneDetector<PREC>::numSlidingWindows(const int left_mid, const int right_mi
 		// std::vector<int> good_left_inds, good_right_inds;
 
 		// for(int i = 0; i < h; ++i){
-		// 	if ((i >= win_y_low) && (i < win_y_high) && (win_x_leftb_left >= 0) && (win_x_leftb_right < binary_warped.cols)) {
-        //         if (binary_warped.at<uint8_t>(i, win_x_leftb_left) == 1)
-        //             good_left_inds.push_back(i * binary_warped.cols + win_x_leftb_left);
+		// 	if ((i >= win_y_low) && (i < win_y_high) && (win_x_leftb_left >= 0) && (win_x_leftb_right < v_thres.cols)) {
+        //         if (v_thres.at<uint8_t>(i, win_x_leftb_left) == 1)
+        //             good_left_inds.push_back(i * v_thres.cols + win_x_leftb_left);
         //     }
 
-        //     if ((i >= win_y_low) && (i < win_y_high) && (win_x_rightb_left >= 0) && (win_x_rightb_right < binary_warped.cols)) {
-        //         if (binary_warped.at<uint8_t>(i, win_x_rightb_left) == 1)
-        //             good_right_inds.push_back(i * binary_warped.cols + win_x_rightb_left);
+        //     if ((i >= win_y_low) && (i < win_y_high) && (win_x_rightb_left >= 0) && (win_x_rightb_right < v_thres.cols)) {
+        //         if (v_thres.at<uint8_t>(i, win_x_rightb_left) == 1)
+        //             good_right_inds.push_back(i * v_thres.cols + win_x_rightb_left);
         //     }
 		// }
 
@@ -205,16 +205,16 @@ int LaneDetector<PREC>::numSlidingWindows(const int left_mid, const int right_mi
 		std::vector<int> lhigh_vector(window_width + 1);
 		
 		for(int i = 0; i < h; ++i){
-			if ((i >= win_y_low) && (i < win_y_high) && (win_x_leftb_left >= 0) && (win_x_leftb_right < binary_warped.cols)) {
+			if ((i >= win_y_low) && (i < win_y_high) && (win_x_leftb_left >= 0) && (win_x_leftb_right < v_thres.cols)) {
                 li++;
 				lhigh_vector[li] = v_thres.at<uchar>(offset, i);
 
 				if (v_thres.at<uchar>(offset, i) == 255 && ll == 0) {
-					ll = (i * binary_warped.cols + win_x_leftb_left) % binary_warped.cols;
-					lr = (i * binary_warped.cols + win_x_leftb_left) % binary_warped.cols;
+					ll = (i * v_thres.cols + win_x_leftb_left) % v_thres.cols;
+					lr = (i * v_thres.cols + win_x_leftb_left) % v_thres.cols;
 				}
 				if (v_thres.at<uchar>(offset, i) == 255 && lr != 0) {
-					lr = (i * binary_warped.cols + win_x_leftb_left) % binary_warped.cols;
+					lr = (i * v_thres.cols + win_x_leftb_left) % v_thres.cols;
 				}
             }
 		}
@@ -236,15 +236,15 @@ int LaneDetector<PREC>::numSlidingWindows(const int left_mid, const int right_mi
 		std::vector<int> rhigh_vector(window_width + 1);
 
 		for(int i = 0; i < h; i++){
-			if ((i >= win_y_low) && (i < win_y_high) && (win_x_rightb_left >= 0) && (win_x_rightb_right < binary_warped.cols)) {
+			if ((i >= win_y_low) && (i < win_y_high) && (win_x_rightb_left >= 0) && (win_x_rightb_right < v_thres.cols)) {
 				ri++;
 				rhigh_vector[ri] = v_thres.at<uchar>(offset, i);
 				if (v_thres.at<uchar>(offset, i) == 255 && rl == w) {
-					rl = (i * binary_warped.cols + win_x_rightb_left) % binary_warped.cols;
-					rr = (i * binary_warped.cols + win_x_rightb_left) % binary_warped.cols;
+					rl = (i * v_thres.cols + win_x_rightb_left) % v_thres.cols;
+					rr = (i * v_thres.cols + win_x_rightb_left) % v_thres.cols;
 				}
 				if (v_thres.at<uchar>(offset, i) == 255 && lr != w) {
-					rr = (i * binary_warped.cols + win_x_rightb_left) % binary_warped.cols;
+					rr = (i * v_thres.cols + win_x_rightb_left) % v_thres.cols;
 				}
 			}
 		}
