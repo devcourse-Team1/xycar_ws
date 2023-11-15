@@ -161,11 +161,6 @@ int LaneDetector<PREC>::numSlidingWindows(const int left_mid, const int right_mi
 	int win_x_rightb_right = right_mid_point + margin;
 	int win_x_rightb_left = right_mid_point - margin;
 
-	int x_ll = 0;
-	int x_lr = 440;
-	int x_rl = 200;
-	int x_rr = 640;
-
 	l_points[0] = cv::Point(left_mid_point, static_cast<int>((win_y_high + win_y_low) >> 1));
 	r_points[0] = cv::Point(right_mid_point, static_cast<int>((win_y_high + win_y_low) >> 1));
 	m_points[0] = cv::Point(static_cast<int>((left_mid_point + right_mid_point) >> 1), static_cast<int>((win_y_high + win_y_low) >> 1));
@@ -185,7 +180,7 @@ int LaneDetector<PREC>::numSlidingWindows(const int left_mid, const int right_mi
 		
 		int li = 0;
 		std::vector<int> lhigh_vector(window_width + 1);
-		for (auto x = x_ll; x < x_lr; x++) {
+		for (auto x = win_x_leftb_left; x < win_x_leftb_right; x++) {
 			li++;
 			lhigh_vector[li] = v_thres.at<uchar>(offset, x);
 			if (v_thres.at<uchar>(offset, x) == 255 && ll == 0) {
@@ -199,7 +194,7 @@ int LaneDetector<PREC>::numSlidingWindows(const int left_mid, const int right_mi
 
 		int ri = 0;
 		std::vector<int> rhigh_vector(window_width + 1);
-		for (auto x = x_rl; x < x_rr; x++) {
+		for (auto x = win_x_rightb_left; x < win_x_rightb_right; x++) {
 			ri++;
 			rhigh_vector[ri] = v_thres.at<uchar>(offset, x);
 			if (v_thres.at<uchar>(offset, x) == 255 && rl == w) {
