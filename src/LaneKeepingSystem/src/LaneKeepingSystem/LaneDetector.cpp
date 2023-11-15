@@ -10,6 +10,7 @@
  * @date 2023-10-13
  */
 
+#include <iterator>
 #include <numeric>
 #include <opencv2/core/mat.hpp>
 #include <opencv2/imgproc.hpp>
@@ -169,10 +170,32 @@ int LaneDetector<PREC>::numSlidingWindows(const int left_mid, const int right_mi
 
 		win_y_high = h - (window + 1) * window_height;
 		win_y_low = h - window * window_height;
+
 		win_x_leftb_right = left_mid_point + margin;
 		win_x_leftb_left = left_mid_point - margin;
 		win_x_rightb_right = right_mid_point + margin;
 		win_x_rightb_left = right_mid_point - margin;
+
+
+		// gradient
+		std::vector<int> good_left_inds, good_right_inds;
+
+		for(int i = 0; i < h; ++i){
+			if ((i >= win_y_low) && (i < win_y_high) && (win_x_leftb_left >= 0) && (win_x_leftb_right < binary_warped.cols)) {
+                if (binary_warped.at<uint8_t>(i, win_x_leftb_left) == 1)
+                    good_left_inds.push_back(i * binary_warped.cols + win_x_leftb_left);
+            }
+
+            if ((i >= win_y_low) && (i < win_y_high) && (win_x_rightb_left >= 0) && (win_x_rightb_right < binary_warped.cols)) {
+                if (binary_warped.at<uint8_t>(i, win_x_rightb_left) == 1)
+                    good_right_inds.push_back(i * binary_warped.cols + win_x_rightb_left);
+            }
+		}
+
+		if(!good_left_inds.empty())
+			left_mid_point = static_cast<int>(std::accumulate(good_left_inds.std::begin(), good_left_inds.std::end(), 0) / good_left_inds.size());
+		if(!good_right_inds.empty())
+			right_mid_point = static_cast<int>(std::accumulate(good_right_inds.std::begin(), good_right_inds.std::end(), 0) / good_right_inds.size());
 
 		int offset = static_cast<int>((win_y_high + win_y_low) >> 1);
 		int pixel_thres = window_width * 0.1;
@@ -259,7 +282,7 @@ int LaneDetector<PREC>::numSlidingWindows(const int left_mid, const int right_mi
 	cv::fitLine(m_points, mid_line, cv::DIST_L2, 0, 0.01, 0.01);
 
 	if (left_line[1] > 0) {
-		left_line[1] = -left_line[1];
+		left_line[1] = left_line[1];
 	}
 	if (right_line[1] > 0) {
 		right_line[1] = right_line[1];
