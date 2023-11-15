@@ -174,18 +174,15 @@ int LaneDetector<PREC>::numSlidingWindows(const int left_mid, const int right_mi
 		win_x_rightb_right = right_mid_point + margin;
 		win_x_rightb_left = right_mid_point - margin;
 
-		int offset_l = static_cast<int>(((win_y_high + win_y_low) >> 1) + 50);
+		int offset = static_cast<int>((win_y_high + win_y_low) >> 1);
 		int pixel_thres = window_width * 0.1;
 		int ll = 0, lr = 0; int rl = w, rr = w;
-
-		std::cout << win_x_leftb_left << " " << win_x_leftb_right << std::endl;
 		
 		int li = 0;
 		std::vector<int> lhigh_vector(window_width + 1);
 		for (auto x = win_x_leftb_left; x < win_x_leftb_right; x++) {
 			li++;
 			lhigh_vector[li] = v_thres.at<uchar>(offset, x);
-
 			if (v_thres.at<uchar>(offset, x) == 255 && ll == 0) {
 				ll = x;
 				lr = x;
@@ -194,7 +191,6 @@ int LaneDetector<PREC>::numSlidingWindows(const int left_mid, const int right_mi
 				lr = x;
 			}
 		}
-		std::cout << win_x_rightb_left << " " << win_x_rightb_right << std::endl;
 
 		int ri = 0;
 		std::vector<int> rhigh_vector(window_width + 1);
@@ -209,10 +205,11 @@ int LaneDetector<PREC>::numSlidingWindows(const int left_mid, const int right_mi
 				rr = x;
 			}
 		}
-		std::cout << "---------" << std::endl;
 
 		int lnonzero = cv::countNonZero(lhigh_vector);
 		int rnonzero = cv::countNonZero(rhigh_vector);
+
+		std::cout << lnonzero << " " << rnonzero << " " << " " << pixel_thres << " " << std::endl;
 
 
 		if (lnonzero >= pixel_thres) {
@@ -225,33 +222,34 @@ int LaneDetector<PREC>::numSlidingWindows(const int left_mid, const int right_mi
 		int lane_mid = (right_mid_point + left_mid_point) >> 1;
 		int left_diff = lane_mid - left_mid_point;
 		int right_diff = -(lane_mid - right_mid_point);
+		
 
 #if 1
-			if (lnonzero < pixel_thres && rnonzero > pixel_thres) {
-				lane_mid = right_mid_point - right_diff;
-				left_mid_point = lane_mid - right_diff;
-			}
-			else if (lnonzero > pixel_thres && rnonzero < pixel_thres) {
-				lane_mid = left_mid_point + left_diff;
-				right_mid_point = lane_mid + left_diff;
-			}
+		if (lnonzero < pixel_thres && rnonzero > pixel_thres) {
+			lane_mid = right_mid_point - right_diff;
+			left_mid_point = lane_mid - right_diff;
+		}
+		else if (lnonzero > pixel_thres && rnonzero < pixel_thres) {
+			lane_mid = left_mid_point + left_diff;
+			right_mid_point = lane_mid + left_diff;
+		}
 #else
-			if (lnonzero < pixel_thres && rnonzero > pixel_thres) {
-				left_mid_point = l_points[window].x;
-				lane_mid = (right_mid_point + left_mid_point) >> 1;
-			}
-			else if (lnonzero > pixel_thres && rnonzero < pixel_thres && r_points[window].x != 0) {
-				right_mid_point = r_points[window].x;
-				lane_mid = (right_mid_point + left_mid_point) >> 1;
-			}
+		if (lnonzero < pixel_thres && rnonzero > pixel_thres) {
+			left_mid_point = l_points[window].x;
+			lane_mid = (right_mid_point + left_mid_point) >> 1;
+		}
+		else if (lnonzero > pixel_thres && rnonzero < pixel_thres && r_points[window].x != 0) {
+			right_mid_point = r_points[window].x;
+			lane_mid = (right_mid_point + left_mid_point) >> 1;
+		}
 
 #endif
-			rectangle(roi, cv::Rect(win_x_leftb_left, win_y_high, window_width, window_height), cv::Scalar(0, 150, 0), 2);
-			rectangle(roi, cv::Rect(win_x_rightb_left, win_y_high, window_width, window_height), cv::Scalar(150, 0, 0), 2);
+		rectangle(roi, cv::Rect(win_x_leftb_left, win_y_high, window_width, window_height), cv::Scalar(0, 150, 0), 2);
+		rectangle(roi, cv::Rect(win_x_rightb_left, win_y_high, window_width, window_height), cv::Scalar(150, 0, 0), 2);
 
-			m_points[window] = cv::Point(lane_mid, static_cast<int>((win_y_high + win_y_low) >> 1));
-			l_points[window] = cv::Point(left_mid_point, static_cast<int>((win_y_high + win_y_low) >> 1));
-			r_points[window] = cv::Point(right_mid_point, static_cast<int>((win_y_high + win_y_low) >> 1));
+		m_points[window] = cv::Point(lane_mid, static_cast<int>((win_y_high + win_y_low) >> 1));
+		l_points[window] = cv::Point(left_mid_point, static_cast<int>((win_y_high + win_y_low) >> 1));
+		r_points[window] = cv::Point(right_mid_point, static_cast<int>((win_y_high + win_y_low) >> 1));
 		
 		pos_diff += lane_mid;
 	} //end for
