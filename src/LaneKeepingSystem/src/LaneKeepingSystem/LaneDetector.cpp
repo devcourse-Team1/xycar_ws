@@ -146,7 +146,7 @@ int LaneDetector<PREC>::numSlidingWindows(const int left_mid, const int right_mi
     std::vector<std::pair<double, double>> total_points(n_windows);
 	int window_height = static_cast<int>(h / n_windows);
 	int window_width = static_cast<int>(w / n_windows * 1.2);
-	int margin = window_width / 2;
+	int margin = window_width >> 1;
 
     std::vector<cv::Point> l_points(n_windows), r_points(n_windows);
 	std::vector<cv::Point> m_points(n_windows);
@@ -174,9 +174,11 @@ int LaneDetector<PREC>::numSlidingWindows(const int left_mid, const int right_mi
 		win_x_rightb_right = right_mid_point + margin;
 		win_x_rightb_left = right_mid_point - margin;
 
-		int offset = static_cast<int>((win_y_high + win_y_low) >> 1);
+		int offset_l = static_cast<int>(((win_y_high + win_y_low) >> 1) + 50);
 		int pixel_thres = window_width * 0.1;
 		int ll = 0, lr = 0; int rl = w, rr = w;
+
+		std::cout << win_x_leftb_left << " " << win_x_leftb_right << std::endl;
 		
 		int li = 0;
 		std::vector<int> lhigh_vector(window_width + 1);
@@ -192,6 +194,7 @@ int LaneDetector<PREC>::numSlidingWindows(const int left_mid, const int right_mi
 				lr = x;
 			}
 		}
+		std::cout << win_x_rightb_left << " " << win_x_rightb_right << std::endl;
 
 		int ri = 0;
 		std::vector<int> rhigh_vector(window_width + 1);
@@ -206,9 +209,11 @@ int LaneDetector<PREC>::numSlidingWindows(const int left_mid, const int right_mi
 				rr = x;
 			}
 		}
+		std::cout << "---------" << std::endl;
 
 		int lnonzero = cv::countNonZero(lhigh_vector);
 		int rnonzero = cv::countNonZero(rhigh_vector);
+
 
 		if (lnonzero >= pixel_thres) {
 			left_mid_point = (ll + lr) >> 1;
@@ -243,7 +248,6 @@ int LaneDetector<PREC>::numSlidingWindows(const int left_mid, const int right_mi
 #endif
 			rectangle(roi, cv::Rect(win_x_leftb_left, win_y_high, window_width, window_height), cv::Scalar(0, 150, 0), 2);
 			rectangle(roi, cv::Rect(win_x_rightb_left, win_y_high, window_width, window_height), cv::Scalar(150, 0, 0), 2);
-
 
 			m_points[window] = cv::Point(lane_mid, static_cast<int>((win_y_high + win_y_low) >> 1));
 			l_points[window] = cv::Point(left_mid_point, static_cast<int>((win_y_high + win_y_low) >> 1));
