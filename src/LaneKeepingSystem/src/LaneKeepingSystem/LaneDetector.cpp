@@ -201,6 +201,7 @@ int LaneDetector<PREC>::numSlidingWindows(const int left_mid, const int right_mi
 		int offset = static_cast<int>((win_y_high + win_y_low) >> 1);
 		int pixel_thres = window_width * 0.1;
 		int ll = 0, lr = 0; int rl = w, rr = w;
+		
 		int li = 0;
 		std::vector<int> lhigh_vector(window_width + 1);
 		
@@ -235,7 +236,7 @@ int LaneDetector<PREC>::numSlidingWindows(const int left_mid, const int right_mi
 		int ri = 0;
 		std::vector<int> rhigh_vector(window_width + 1);
 
-		for(int i = 0; i < h; i++){
+		for(int i = 0; i < h; ++i){
 			if ((i >= win_y_low) && (i < win_y_high) && (win_x_rightb_left >= 0) && (win_x_rightb_right < v_thres.cols)) {
 				ri++;
 				rhigh_vector[ri] = v_thres.at<uchar>(offset, i);
