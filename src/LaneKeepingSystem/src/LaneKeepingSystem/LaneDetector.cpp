@@ -205,62 +205,62 @@ int LaneDetector<PREC>::numSlidingWindows(const int left_mid, const int right_mi
 		int li = 0;
 		std::vector<int> lhigh_vector(window_width + 1);
 		
-		for(int i = 0; i < h; ++i){
-			if ((i >= win_y_low) && (i < win_y_high) && (win_x_leftb_left >= 0) && (win_x_leftb_right < v_thres.cols)) {
-                li++;
-				lhigh_vector[li] = v_thres.at<uchar>(offset, i);
+		// for(int i = 0; i < h; ++i){
+		// 	if ((i >= win_y_low) && (i < win_y_high) && (win_x_leftb_left >= 0) && (win_x_leftb_right < v_thres.cols)) {
+        //         li++;
+		// 		lhigh_vector[li] = v_thres.at<uchar>(offset, i);
 
-				if (v_thres.at<uchar>(offset, i) == 255 && ll == 0) {
-					ll = (i * v_thres.cols + win_x_leftb_left) % v_thres.cols;
-					lr = (i * v_thres.cols + win_x_leftb_left) % v_thres.cols;
-				}
-				if (v_thres.at<uchar>(offset, i) == 255 && lr != 0) {
-					lr = (i * v_thres.cols + win_x_leftb_left) % v_thres.cols;
-				}
-            }
-		}
-		
-		// for (auto x = win_x_leftb_left; x < win_x_leftb_right; x++) {
-		// 	li++;
-		// 	lhigh_vector[li] = v_thres.at<uchar>(offset, x);
-
-		// 	if (v_thres.at<uchar>(offset, x) == 255 && ll == 0) {
-		// 		ll = x;
-		// 		lr = x;
-		// 	}
-		// 	if (v_thres.at<uchar>(offset, x) == 255 && lr != 0) {
-		// 		lr = x;
-		// 	}
+		// 		if (v_thres.at<uchar>(offset, i) == 255 && ll == 0) {
+		// 			ll = (i * v_thres.cols + win_x_leftb_left) % v_thres.cols;
+		// 			lr = (i * v_thres.cols + win_x_leftb_left) % v_thres.cols;
+		// 		}
+		// 		if (v_thres.at<uchar>(offset, i) == 255 && lr != 0) {
+		// 			lr = (i * v_thres.cols + win_x_leftb_left) % v_thres.cols;
+		// 		}
+        //     }
 		// }
+		
+		for (auto x = win_x_leftb_left; x < win_x_leftb_right; x++) {
+			li++;
+			lhigh_vector[li] = v_thres.at<uchar>(offset, x);
+
+			if (v_thres.at<uchar>(offset, x) == 255 && ll == 0) {
+				ll = x;
+				lr = x;
+			}
+			if (v_thres.at<uchar>(offset, x) == 255 && lr != 0) {
+				lr = x;
+			}
+		}
 
 		int ri = 0;
 		std::vector<int> rhigh_vector(window_width + 1);
 
-		for(int i = 0; i < h; ++i){
-			if ((i >= win_y_low) && (i < win_y_high) && (win_x_rightb_left >= 0) && (win_x_rightb_right < v_thres.cols)) {
-				ri++;
-				rhigh_vector[ri] = v_thres.at<uchar>(offset, i);
-				if (v_thres.at<uchar>(offset, i) == 255 && rl == w) {
-					rl = (i * v_thres.cols + win_x_rightb_left) % v_thres.cols;
-					rr = (i * v_thres.cols + win_x_rightb_left) % v_thres.cols;
-				}
-				if (v_thres.at<uchar>(offset, i) == 255 && lr != w) {
-					rr = (i * v_thres.cols + win_x_rightb_left) % v_thres.cols;
-				}
-			}
-		}
-
-		// for (auto x = win_x_rightb_left; x < win_x_rightb_right; x++) {
-		// 	ri++;
-		// 	rhigh_vector[ri] = v_thres.at<uchar>(offset, x);
-		// 	if (v_thres.at<uchar>(offset, x) == 255 && rl == w) {
-		// 		rl = x;
-		// 		rr = x;
-		// 	}
-		// 	if (v_thres.at<uchar>(offset, x) == 255 && lr != w) {
-		// 		rr = x;
+		// for(int i = 0; i < h; ++i){
+		// 	if ((i >= win_y_low) && (i < win_y_high) && (win_x_rightb_left >= 0) && (win_x_rightb_right < v_thres.cols)) {
+		// 		ri++;
+		// 		rhigh_vector[ri] = v_thres.at<uchar>(offset, i);
+		// 		if (v_thres.at<uchar>(offset, i) == 255 && rl == w) {
+		// 			rl = (i * v_thres.cols + win_x_rightb_left) % v_thres.cols;
+		// 			rr = (i * v_thres.cols + win_x_rightb_left) % v_thres.cols;
+		// 		}
+		// 		if (v_thres.at<uchar>(offset, i) == 255 && lr != w) {
+		// 			rr = (i * v_thres.cols + win_x_rightb_left) % v_thres.cols;
+		// 		}
 		// 	}
 		// }
+
+		for (auto x = win_x_rightb_left; x < win_x_rightb_right; x++) {
+			ri++;
+			rhigh_vector[ri] = v_thres.at<uchar>(offset, x);
+			if (v_thres.at<uchar>(offset, x) == 255 && rl == w) {
+				rl = x;
+				rr = x;
+			}
+			if (v_thres.at<uchar>(offset, x) == 255 && lr != w) {
+				rr = x;
+			}
+		}
 
 		int lnonzero = cv::countNonZero(lhigh_vector);
 		int rnonzero = cv::countNonZero(rhigh_vector);
