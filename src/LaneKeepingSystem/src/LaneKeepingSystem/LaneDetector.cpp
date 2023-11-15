@@ -175,6 +175,7 @@ int LaneDetector<PREC>::numSlidingWindows(const int left_mid, const int right_mi
 		win_x_rightb_right = right_mid_point + margin;
 		win_x_rightb_left = right_mid_point - margin;
 
+		int offset = static_cast<int>((win_y_high + win_y_low) >> 1);
 		int offset_l = static_cast<int>(((win_y_high + win_y_low) >> 1) + 50);
 		int pixel_thres = window_width * 0.1;
 		int ll = 0, lr = 0; int rl = w, rr = w;
