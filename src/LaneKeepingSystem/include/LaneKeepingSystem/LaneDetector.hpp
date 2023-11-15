@@ -52,9 +52,12 @@ private:
 
     int mPosDiff;
 
-    cv::Mat mFrame, mBirdEyeImg, mHsvImg, mGausImg, mErodeImg;
+    cv::Mat mUnditort, mBirdEyeImg, mHsvImg, mGausImg, mErodeImg;
     cv::Mat mPerMatToDst, mPerMatToSrc;
-    
+
+    cv::Mat mCameraMat = cv::Mat::eye(3, 3, CV_64FC1);
+    cv::Mat mDistCoeffs = cv::Mat::zeros(1, 5, CV_64FC1);
+
     std::vector<cv::Point2f> mSrcPts, mDstPts;
     std::vector<cv::Point> mPts, mWarpLeftLine, mWarpRightLine;
     // Debug Image and flag

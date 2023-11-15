@@ -62,8 +62,9 @@ void LaneDetector<PREC>::setConfiguration(const YAML::Node& config)
 
     mPerMatToDst = cv::getPerspectiveTransform(mSrcPts, mDstPts);
     mPerMatToSrc = cv::getPerspectiveTransform(mDstPts, mSrcPts);
-    cv::Mat mFrame, mBirdEyeImg, mHsvImg, mGausImg, mErodeImg;
-
+    cv::Mat mUnditort, mBirdEyeImg, mHsvImg, mGausImg, mErodeImg;
+	cv::Mat mCameraMat = (cv::Mat1d(3, 3) << 422.037858, 0., 245.895397, 0., 435.589734, 163.625535, 0., 0., 1. );
+	cv::Mat mDistCoeffs = (cv::Mat1d(1, 5) << -0.289296, 0.061035, 0.001786, 0.015238, 0.);
     mDebugging = config["DEBUG"].as<bool>();
 }
 
@@ -79,7 +80,8 @@ int LaneDetector<PREC>::totalFunction(const cv::Mat img)
     else{
         cv::Mat v_thres = cv::Mat::zeros(mImageWidth, mImageHeight, CV_8UC1);
 
-        cv::warpPerspective(img, mBirdEyeImg, mPerMatToDst, cv::Size(mImageWidth, mImageHeight));
+		cv::undistort(img, mUnditort, mCameraMat, mDistCoeffs);
+        cv::warpPerspective(mUnditort, mBirdEyeImg, mPerMatToDst, cv::Size(mImageWidth, mImageHeight));
         cv::cvtColor(mBirdEyeImg, mHsvImg, cv::COLOR_BGR2HSV);
         
         std::vector<cv::Mat> hsv_planes;
@@ -93,7 +95,6 @@ int LaneDetector<PREC>::totalFunction(const cv::Mat img)
         cv::GaussianBlur(v_plane, v_plane, cv::Size(), mGausBlurSigma);
         cv::inRange(v_plane, mMinThres, mMaxThres, v_thres);
 		cv::morphologyEx(v_thres, mErodeImg, cv::MORPH_OPEN, cv::Mat(), cv::Point(-1, -1), 4);
-		//cv::morphologyEx(v_thres, mErodeImg, cv::MORPH_ERODE, cv::Mat(), cv::Point(-1, -1), 4);
 
 		cv::arrowedLine(mBirdEyeImg, cv::Point(mImageWidth / 2, mImageHeight), cv::Point(mImageWidth / 2, mImageHeight - 40), cv::Scalar(255, 0, 255), 3);
 
@@ -124,13 +125,12 @@ int LaneDetector<PREC>::totalFunction(const cv::Mat img)
         int left_mid_point = (left_l_init + left_r_init) / 2;
         int right_mid_point = (right_l_init + right_r_init) / 2;
 
-        mPosDiff = numSlidingWindows(left_mid_point, right_mid_point, mBirdEyeImg, mErodeImg, mImageWidth, mImageHeight, mPerMatToSrc, img);
+        mPosDiff = numSlidingWindows(left_mid_point, right_mid_point, mBirdEyeImg, mErodeImg, mImageWidth, mImageHeight, mPerMatToSrc, mUnditort);
 		mPosDiff -= (mImageWidth / 2);
 
-        cv::imshow("frame_", img);
-        cv::imshow("check", mBirdEyeImg);
-		// cv::imshow("v_thres", v_thres);
-		// cv::imshow("open", mErodeImg);
+        // cv::imshow("frame_", img);
+        cv::imshow("distort", mUnditort);
+		cv::imshow("check", mBirdEyeImg);
 
         cv::waitKey(33);
     }
