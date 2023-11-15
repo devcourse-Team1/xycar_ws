@@ -122,8 +122,8 @@ int LaneDetector<PREC>::totalFunction(const cv::Mat img)
 			}
         }
 
-        int left_mid_point = (left_l_init + left_r_init) / 2;
-        int right_mid_point = (right_l_init + right_r_init) / 2;
+        int left_mid_point = (left_l_init + left_r_init) >> 1;
+        int right_mid_point = (right_l_init + right_r_init) >> 1;
 
         mPosDiff = numSlidingWindows(left_mid_point, right_mid_point, mBirdEyeImg, mErodeImg, mImageWidth, mImageHeight, mPerMatToSrc, mUnditort);
 		mPosDiff -= (mImageWidth / 2);
@@ -146,7 +146,7 @@ int LaneDetector<PREC>::numSlidingWindows(const int left_mid, const int right_mi
     std::vector<std::pair<double, double>> total_points(n_windows);
 	int window_height = static_cast<int>(h / n_windows);
 	int window_width = static_cast<int>(w / n_windows * 1.2);
-	int margin = window_width >> 1;
+	int margin = window_width / 2;
 
     std::vector<cv::Point> l_points(n_windows), r_points(n_windows);
 	std::vector<cv::Point> m_points(n_windows);
@@ -221,7 +221,7 @@ int LaneDetector<PREC>::numSlidingWindows(const int left_mid, const int right_mi
 		int left_diff = lane_mid - left_mid_point;
 		int right_diff = -(lane_mid - right_mid_point);
 
-		#if 1
+#if 1
 			if (lnonzero < pixel_thres && rnonzero > pixel_thres) {
 				lane_mid = right_mid_point - right_diff;
 				left_mid_point = lane_mid - right_diff;
@@ -230,17 +230,17 @@ int LaneDetector<PREC>::numSlidingWindows(const int left_mid, const int right_mi
 				lane_mid = left_mid_point + left_diff;
 				right_mid_point = lane_mid + left_diff;
 			}
-		#else
+#else
 			if (lnonzero < pixel_thres && rnonzero > pixel_thres) {
 				left_mid_point = l_points[window].x;
-				lane_mid = (right_mid_point + left_mid_point) / 2;
+				lane_mid = (right_mid_point + left_mid_point) >> 1;
 			}
 			else if (lnonzero > pixel_thres && rnonzero < pixel_thres && r_points[window].x != 0) {
 				right_mid_point = r_points[window].x;
-				lane_mid = (right_mid_point + left_mid_point) / 2;
+				lane_mid = (right_mid_point + left_mid_point) >> 1;
 			}
 
-		#endif
+#endif
 			rectangle(roi, cv::Rect(win_x_leftb_left, win_y_high, window_width, window_height), cv::Scalar(0, 150, 0), 2);
 			rectangle(roi, cv::Rect(win_x_rightb_left, win_y_high, window_width, window_height), cv::Scalar(150, 0, 0), 2);
 
@@ -259,7 +259,7 @@ int LaneDetector<PREC>::numSlidingWindows(const int left_mid, const int right_mi
 	cv::fitLine(m_points, mid_line, cv::DIST_L2, 0, 0.01, 0.01);
 
 	if (left_line[1] > 0) {
-		left_line[1] = -left_line[1];
+		left_line[1] = left_line[1];
 	}
 	if (right_line[1] > 0) {
 		right_line[1] = right_line[1];
