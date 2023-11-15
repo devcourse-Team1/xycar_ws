@@ -48,13 +48,19 @@ template <typename PREC>
 void LaneKeepingSystem<PREC>::run()
 {
     ros::Rate rate(kFrameRate);
+
+    
     while (ros::ok())
     {
         ros::spinOnce();
         if(!mFrame.empty()){
             mPos = mLaneDetector->totalFunction(mFrame);
-            // speedControl(mPos);
-            // drive(mPos);
+
+            mMovingAverage->addSample(mPos);
+            mfilteringPos = mMovingAverage->getResult();
+            mPIDPos = mPID->getControlOutput(mfilteringPos);
+            speedControl(mPIDPos);
+            drive(mPIDPos);
         }
     }
 }

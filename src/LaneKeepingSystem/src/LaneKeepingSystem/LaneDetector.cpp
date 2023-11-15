@@ -10,6 +10,7 @@
  * @date 2023-10-13
  */
 
+#include <iterator>
 #include <numeric>
 #include <opencv2/core/mat.hpp>
 #include <opencv2/imgproc.hpp>
@@ -182,7 +183,7 @@ int LaneDetector<PREC>::numSlidingWindows(const int left_mid, const int right_mi
 		
 		int li = 0;
 		std::vector<int> lhigh_vector(window_width + 1);
-		for (auto x = win_x_leftb_left; x < win_x_leftb_right; x++) {
+				for (auto x = win_x_leftb_left; x < win_x_leftb_right; x++) {
 			li++;
 			lhigh_vector[li] = v_thres.at<uchar>(offset, x);
 
@@ -292,7 +293,7 @@ int LaneDetector<PREC>::numSlidingWindows(const int left_mid, const int right_mi
     matrix_oper_pos(frame, mPerMatToSrc, lx1, ly1, lx2, ly2, rx1, ry1, rx2, ry2);
 
 	pos_diff = pos_diff / n_windows;
-	return pos_diff;
+		return pos_diff;
 }
 
 template <typename PREC>

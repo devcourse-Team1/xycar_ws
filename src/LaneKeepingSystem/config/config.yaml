@@ -37,7 +37,7 @@ XYCAR:
 
 # If you want to use other control methods, Change PID to another control methods.
 PID:
-  P_GAIN: 0.0
+  P_GAIN: 0.3
   I_GAIN: 0.0000
   D_GAIN: 0.00
   # find your parameter.
