@@ -44,9 +44,10 @@ LaneKeepingSystem<PREC>::~LaneKeepingSystem()
 }
 
 template <typename PREC>
-void LaneKeepingSystem<PREC>::run(std::pair<double, double> prev_result)
+void LaneKeepingSystem<PREC>::run()
 {
     ros::Rate rate(kFrameRate);
+    // std::pair<double, double> prev_result;
     while (ros::ok())
     {
         ros::spinOnce();
@@ -55,12 +56,14 @@ void LaneKeepingSystem<PREC>::run(std::pair<double, double> prev_result)
         */
         std::pair<double, std::pair<double, double>> result;
         int32_t pos_diff, filtering_result, pid_result;
-        const int32_t angle_threshold = 50;
+        const int32_t angle_low_threshold = 50;
+        const int32_t angle_high_threshold = 150;
 
-        result = mLaneDetector->Hough(mFrame, prev_result);
+        result = mLaneDetector->Hough(mFrame);
         pos_diff = result.first;
-        prev_result = result.second;
-        std::cout << "result : " << pos_diff << ", " << prev_result.first << ", " << prev_result.second << "\n";
+        // prev_result = result.second;
+
+        // std::cout << "result : " << pos_diff << ", " << prev_result.first << ", " << prev_result.second << "\n";
         if (pos_diff == -320)
         {
             continue;
@@ -68,16 +71,20 @@ void LaneKeepingSystem<PREC>::run(std::pair<double, double> prev_result)
         mMovingAverage->addSample(pos_diff);
         filtering_result = mMovingAverage->getResult();
 
-        if (abs(filtering_result) >= angle_threshold)
+        if (abs(filtering_result) >= angle_high_threshold)
+        {
+            pid_result = mPID->getControlOutput(filtering_result * 2.3);
+            std::cout << "filtering result : " << filtering_result << "\n";
+        }
+        else if (abs(filtering_result) >= angle_low_threshold)
         {
             pid_result = mPID->getControlOutput(filtering_result * 1.8);
-            std::cout << "filtering result : " << filtering_result << "\n";
         }
         else
         {
             pid_result = mPID->getControlOutput(filtering_result);
         }
-        std::cout << "pid_result : " << pid_result << "\n";
+        // std::cout << "pid_result : " << pid_result << "\n";
 
         if (pid_result == 0)
         {

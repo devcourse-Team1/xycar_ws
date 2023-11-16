@@ -20,10 +20,10 @@ template <typename PREC>
 class LaneKeepingSystem
 {
 public:
-    using Ptr = LaneKeepingSystem*;                                     ///< Pointer type of this class
-    using ControllerPtr = typename PIDController<PREC>::Ptr;            ///< Pointer type of PIDController
-    using FilterPtr = typename MovingAverageFilter<PREC>::Ptr;          ///< Pointer type of MovingAverageFilter
-    using DetectorPtr = typename LaneDetector<PREC>::Ptr;               ///< Pointer type of LaneDetecter(It's up to you)
+    using Ptr = LaneKeepingSystem*;                            ///< Pointer type of this class
+    using ControllerPtr = typename PIDController<PREC>::Ptr;   ///< Pointer type of PIDController
+    using FilterPtr = typename MovingAverageFilter<PREC>::Ptr; ///< Pointer type of MovingAverageFilter
+    using DetectorPtr = typename LaneDetector<PREC>::Ptr;      ///< Pointer type of LaneDetecter(It's up to you)
 
     static constexpr int32_t kXycarSteeringAangleLimit = 50; ///< Xycar Steering Angle Limit
     static constexpr double kFrameRate = 33.0;               ///< Frame rate
@@ -40,7 +40,7 @@ public:
     /**
      * @brief Run Lane Keeping System
      */
-    void run(std::pair<double, double> prev_result);
+    void run();
 
 private:
     /**
@@ -66,8 +66,8 @@ private:
     void imageCallback(const sensor_msgs::Image& message);
 
 private:
-    ControllerPtr mPID;                      ///< PID Class for Control
-    FilterPtr mMovingAverage;                ///< Moving Average Filter Class for Noise filtering
+    ControllerPtr mPID;       ///< PID Class for Control
+    FilterPtr mMovingAverage; ///< Moving Average Filter Class for Noise filtering
     DetectorPtr mLaneDetector;
 
     // ROS Variables
