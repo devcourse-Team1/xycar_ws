@@ -54,19 +54,33 @@ void LaneKeepingSystem<PREC>::run(std::pair<double, double> prev_result)
         write your code.
         */
         std::pair<double, std::pair<double, double>> result;
-        int32_t pos_diff;
-        PREC filtering_result;
+        int32_t pos_diff, filtering_result, pid_result;
+        const int32_t pid_threshold = 50;
+
         result = mLaneDetector->Hough(mFrame, prev_result);
         pos_diff = result.first;
         prev_result = result.second;
+
         mMovingAverage->addSample(pos_diff);
         filtering_result = mMovingAverage->getResult();
-        // pid_result = mPID->getControlOutput(filtering_result);
+        pid_result = mPID->getControlOutput(filtering_result);
 
-        std::cout << "filtering_result : " << filtering_result << "\n";
+        std::cout << "pid_result : " << pid_result << "\n";
 
-        speedControl((filtering_result / 2));
-        drive((filtering_result / 2));
+        if (pid_result == 0)
+        {
+            continue;
+        }
+        else if (abs(pid_result) >= pid_threshold)
+        {
+            speedControl(pid_result * 2);
+            drive(pid_result * 2);
+        }
+        else
+        {
+            speedControl(pid_result * 1.5);
+            drive(pid_result * 1.5);
+        }
     }
 }
 

@@ -57,8 +57,9 @@ cv::Mat LaneDetector<PREC>::regionOfInterest(cv::Mat src)
 template <typename PREC>
 std::pair<double, double> LaneDetector<PREC>::calculatePoints(std::pair<double, double> prev_result, std::vector<cv::Vec4i> lines)
 {
-    std::vector<double> results, rightResults, leftResults;
+    std::vector<double> rightResults, leftResults;
     std::pair<double, double> cur_result;
+    const int mpoint_threshold = 200;
     const int pos_threshold = 50;
     double mpoint(0);
 
@@ -75,13 +76,12 @@ std::pair<double, double> LaneDetector<PREC>::calculatePoints(std::pair<double, 
 
         if ((slope < -0.3) && (mpoint <= ((mImageWidth / 2) + mpoint_threshold)))
         {
-            lresults.push_back(mpoint);
+            leftResults.push_back(mpoint);
         }
         if ((slope > 0.3) && (mpoint >= ((mImageWidth / 2) - mpoint_threshold)))
         {
-            rresults.push_back(mpoint);
+            rightResults.push_back(mpoint);
         }
-        results.push_back(mpoint);
     }
 
     double lpos(0.0), rpos(0.0);
@@ -100,6 +100,7 @@ std::pair<double, double> LaneDetector<PREC>::calculatePoints(std::pair<double, 
     }
 
     cur_result = std::make_pair(lpos / (double)lcnt, rpos / (double)rcnt);
+    // std::cout << "cur_result : " << cur_result.first << ", " << cur_result.second << "\n";
 
     if (isnan(cur_result.first) == 1)
     {
@@ -117,8 +118,8 @@ std::pair<double, double> LaneDetector<PREC>::calculatePoints(std::pair<double, 
         prev_result = cur_result;
     }
 
-    lresults.clear();
-    rresults.clear();
+    leftResults.clear();
+    rightResults.clear();
 
     return prev_result;
 }
