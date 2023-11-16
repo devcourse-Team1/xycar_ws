@@ -90,7 +90,7 @@ private:
     PREC mAccelerationStep;           ///< How much would accelrate xycar depending on threshold
     PREC mDecelerationStep;           ///< How much would deaccelrate xycar depending on threshold
 
-    int mPos;
+    int32_t mPos, mFilteringResult, mPidResult;
     // Debug Flag
     bool mDebugging; ///< Debugging or not
 };

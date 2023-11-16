@@ -5,14 +5,14 @@ IMAGE:
   MAXTHRES: 255
 
   SRCPT_X0: 80
-  SRCPT_X1: 430
-  SRCPT_X2: 480
-  SRCPT_X3: 10
+  SRCPT_X1: 420
+  SRCPT_X2: 460
+  SRCPT_X3: 30
 
-  SRCPT_Y0: 380
-  SRCPT_Y1: 380
-  SRCPT_Y2: 420
-  SRCPT_Y3: 420
+  SRCPT_Y0: 370
+  SRCPT_Y1: 370
+  SRCPT_Y2: 430
+  SRCPT_Y3: 430
   
   DSTPT_X0: 0
   DSTPT_X1: 479
@@ -27,17 +27,17 @@ IMAGE:
   # find your ROI parameter.
 
 XYCAR:
-  START_SPEED: 8.0
-  MAX_SPEED: 10.0 #12
-  MIN_SPEED: 8.0 #7
-  SPEED_CONTROL_THRESHOLD: 60.0 #40
+  START_SPEED: 10.0
+  MAX_SPEED: 12.0
+  MIN_SPEED: 5.0
+  SPEED_CONTROL_THRESHOLD: 15.0
   ACCELERATION_STEP: 0.50
-  DECELERATION_STEP: 0.5
+  DECELERATION_STEP: 1.00
   # find your parameter.
 
 # If you want to use other control methods, Change PID to another control methods.
 PID:
-  P_GAIN: 0.0
+  P_GAIN: 0.3
   I_GAIN: 0.0000
   D_GAIN: 0.00
   # find your parameter.

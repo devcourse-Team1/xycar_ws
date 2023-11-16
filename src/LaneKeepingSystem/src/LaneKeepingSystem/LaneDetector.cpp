@@ -82,13 +82,13 @@ int LaneDetector<PREC>::totalFunction(const cv::Mat img)
 
 		cv::undistort(img, mUnditort, mCameraMat, mDistCoeffs);
         cv::warpPerspective(mUnditort, mBirdEyeImg, mPerMatToDst, cv::Size(mImageWidth, mImageHeight));
-        cv::cvtColor(mBirdEyeImg, mHsvImg, cv::COLOR_BGR2HSV);
+		cv::cvtColor(mBirdEyeImg, mHsvImg, cv::COLOR_BGR2HSV);
         
         std::vector<cv::Mat> hsv_planes;
-        cv::split(mBirdEyeImg, hsv_planes);
+        cv::split(mHsvImg, hsv_planes);
         cv::Mat v_plane = hsv_planes[2];
-        v_plane = 255 - v_plane;
 
+        v_plane = 255 - v_plane;
         int means = mean(v_plane)[0];
         v_plane = v_plane + (100 - means);
 
@@ -96,23 +96,40 @@ int LaneDetector<PREC>::totalFunction(const cv::Mat img)
         cv::inRange(v_plane, mMinThres, mMaxThres, v_thres);
 		cv::morphologyEx(v_thres, mErodeImg, cv::MORPH_OPEN, cv::Mat(), cv::Point(-1, -1), 4);
 
+		// cv::polylines(mUnditort, mPts, true, cv::Scalar(255, 255, 0), 2);
 		cv::arrowedLine(mBirdEyeImg, cv::Point(mImageWidth / 2, mImageHeight), cv::Point(mImageWidth / 2, mImageHeight - 40), cv::Scalar(255, 0, 255), 3);
 
         int left_l_init = 0, left_r_init = 0;
         int right_l_init = mImageWidth, right_r_init = mImageWidth;
 
+
         for(int x = 0; x < mImageWidth; x++){
-            if(x < mImageWidth / 2){
-                if(mErodeImg.at<uchar>(mImageHeight - 1, x) == 255 && left_l_init == 0){
-                    left_l_init = x;
-                    left_r_init = x;
-                }
+            if(x >= 0 &&  x < 500){
+				if(mErodeImg.at<uchar>(mImageHeight - 1, x) == 255 && left_l_init == 0){
+					left_l_init = x;
+					left_r_init = x;
+				}
 				if (mErodeImg.at<uchar>(mImageHeight - 1, x) == 255 && left_r_init != 0) {
 					left_r_init = x;
 				}
+				if (mErodeImg.at<uchar>(mImageHeight - 1, x) == 255 && right_l_init == 640 && mRGrad > 0) {
+					right_l_init = x;
+					right_r_init = x;
+				}
+				if (mErodeImg.at<uchar>(mImageHeight - 1, x) == 255 && right_r_init != 640 && mRGrad > 0) {
+					right_l_init = x;
+				}
 			}
-			else{
-				if (mErodeImg.at<uchar>(mImageHeight - 1, x) == 255 && right_l_init == 640) {
+			
+			if(x >= 140 && x < 640){
+				if(mErodeImg.at<uchar>(mImageHeight - 1, x) == 255 && left_l_init == 0 && mLGrad < 0){
+					left_l_init = x;
+					left_r_init = x;
+				}
+				if (mErodeImg.at<uchar>(mImageHeight - 1, x) == 255 && left_r_init != 0 && mLGrad < 0) {
+					left_r_init = x;
+				}
+				if (mErodeImg.at<uchar>(mImageHeight - 1, x) == 255 && right_l_init == 640 ) {
 					right_l_init = x;
 					right_r_init = x;
 				}
@@ -120,17 +137,32 @@ int LaneDetector<PREC>::totalFunction(const cv::Mat img)
 					right_l_init = x;
 				}
 			}
+
+			if(left_r_init <= mImageWidth / 2 && right_l_init <= mImageWidth / 2 && mLGrad != 0 && mLGrad < 0){
+				left_l_init = 0;
+				left_r_init = 0;
+			}
+			if(left_r_init >= mImageWidth / 2 && right_l_init >= mImageWidth / 2 && mRGrad != 0 && mRGrad > 0){
+				right_l_init = 640;
+				right_r_init = 640;
+			}
         }
 
         int left_mid_point = (left_l_init + left_r_init) >> 1;
         int right_mid_point = (right_l_init + right_r_init) >> 1;
 
-        mPosDiff = numSlidingWindows(left_mid_point, right_mid_point, mBirdEyeImg, mErodeImg, mImageWidth, mImageHeight, mPerMatToSrc, mUnditort);
+        mPosAndGrad = numSlidingWindows(left_mid_point, right_mid_point, mBirdEyeImg, mErodeImg, mImageWidth, mImageHeight, mPerMatToSrc, mUnditort);
+		mPosDiff = static_cast<int>(mPosAndGrad[0]);
+		mLGrad = mPosAndGrad[1];
+		mRGrad = mPosAndGrad[2];
 		mPosDiff -= (mImageWidth / 2);
 
         // cv::imshow("frame_", img);
-        cv::imshow("distort", mUnditort);
+        // cv::imshow("distort", mUnditort);
 		cv::imshow("check", mBirdEyeImg);
+		// cv::imshow("hsv_img", mHsvImg);
+		// cv::imshow("v_plane", v_plane);
+		// cv::imshow("vthres", mErodeImg);
 
         cv::waitKey(33);
     }
@@ -138,7 +170,7 @@ int LaneDetector<PREC>::totalFunction(const cv::Mat img)
 }
 
 template <typename PREC>
-int LaneDetector<PREC>::numSlidingWindows(const int left_mid, const int right_mid, const cv::Mat roi, const cv::Mat v_thres,
+std::vector<float> LaneDetector<PREC>::numSlidingWindows(const int left_mid, const int right_mid, const cv::Mat roi, const cv::Mat v_thres,
                             const int w, const int h, const cv::Mat per_mat_tosrc, const cv::Mat frame)
 {
 	int n_windows = 12;
@@ -150,6 +182,9 @@ int LaneDetector<PREC>::numSlidingWindows(const int left_mid, const int right_mi
 
     std::vector<cv::Point> l_points(n_windows), r_points(n_windows);
 	std::vector<cv::Point> m_points(n_windows);
+	std::vector<float> result(3);
+	float m_left_grad = 0.0;
+	float m_right_grad = 0.0;
 
     int left_mid_point = left_mid;
     int right_mid_point = right_mid;
@@ -209,9 +244,6 @@ int LaneDetector<PREC>::numSlidingWindows(const int left_mid, const int right_mi
 		int lnonzero = cv::countNonZero(lhigh_vector);
 		int rnonzero = cv::countNonZero(rhigh_vector);
 
-		std::cout << lnonzero << " " << rnonzero << " " << " " << pixel_thres << " " << std::endl;
-
-
 		if (lnonzero >= pixel_thres) {
 			left_mid_point = (ll + lr) >> 1;
 		}
@@ -254,6 +286,7 @@ int LaneDetector<PREC>::numSlidingWindows(const int left_mid, const int right_mi
 		pos_diff += lane_mid;
 	} //end for
 
+
 	cv::Vec4f left_line, right_line, mid_line;
 	
 	cv::fitLine(l_points, left_line, cv::DIST_L2, 0, 0.01, 0.01);
@@ -269,6 +302,10 @@ int LaneDetector<PREC>::numSlidingWindows(const int left_mid, const int right_mi
 	if (mid_line[1] > 0) {
 		mid_line[1] = mid_line[1];
 	}
+
+	m_left_grad = ((l_points[11].y - l_points[0].y) / (l_points[11].x - l_points[0].x));
+	m_right_grad = ((r_points[11].y - r_points[0].y) / (r_points[11].x  - r_points[0].x));
+	std::cout << m_left_grad << " " << m_right_grad << std::endl;
 
 	int lx0 = left_line[2], ly0 = left_line[3];
 	int lx1 = lx0 + h / 2 * left_line[0], ly1 = ly0 + h / 2 * left_line[1];
@@ -290,7 +327,11 @@ int LaneDetector<PREC>::numSlidingWindows(const int left_mid, const int right_mi
     matrix_oper_pos(frame, mPerMatToSrc, lx1, ly1, lx2, ly2, rx1, ry1, rx2, ry2);
 
 	pos_diff = pos_diff / n_windows;
-	return pos_diff;
+	result.push_back(pos_diff);
+	result.push_back(m_left_grad);
+	result.push_back(m_right_grad);
+
+	return result;
 }
 
 template <typename PREC>
@@ -325,7 +366,6 @@ void LaneDetector<PREC>::matrix_oper_pos(cv::Mat frame, cv::Mat per_mat_tosrc, i
 
 	warp_left_line.push_back(cv::Point(new_lx1, new_ly1)); warp_left_line.push_back(cv::Point(new_lx2, new_ly2));
 	warp_right_line.push_back(cv::Point(new_rx1, new_ry1)); warp_right_line.push_back(cv::Point(new_rx2, new_ry2));
-
 
 	line(frame, cv::Point(new_lx1, new_ly1), cv::Point(new_lx2, new_ly2), cv::Scalar(0, 255, 255), 2);
 	line(frame, cv::Point(new_rx1, new_ry1), cv::Point(new_rx2, new_ry2), cv::Scalar(0, 255, 255), 2);

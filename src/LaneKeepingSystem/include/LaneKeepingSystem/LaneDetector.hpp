@@ -20,7 +20,7 @@ public:
 
     LaneDetector(const YAML::Node& config) {setConfiguration(config);}
     int totalFunction(const cv::Mat img);
-    int numSlidingWindows(const int left_mid_point, const int right_mid_point, const cv::Mat roi, const cv::Mat v_thres,
+    std::vector<float> numSlidingWindows(const int left_mid_point, const int right_mid_point, const cv::Mat roi, const cv::Mat v_thres,
                             const int w, const int h, const cv::Mat per_mat_tosrc, const cv::Mat frame);
     void matrix_oper_pos(cv::Mat frame, cv::Mat per_mat_tosrc, int lx1, int ly1, int lx2, int ly2, int rx1, int ry1, int rx2, int ry2);
 
@@ -51,6 +51,9 @@ private:
     float mGausBlurSigma;
 
     int mPosDiff;
+    float mLGrad, mRGrad;
+
+    std::vector<float> mPosAndGrad;
 
     cv::Mat mUnditort, mBirdEyeImg, mHsvImg, mGausImg, mErodeImg;
     cv::Mat mPerMatToDst, mPerMatToSrc;
