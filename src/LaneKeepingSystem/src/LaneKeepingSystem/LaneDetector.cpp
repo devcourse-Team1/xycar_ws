@@ -112,23 +112,9 @@ int LaneDetector<PREC>::totalFunction(const cv::Mat img)
 				if (mErodeImg.at<uchar>(mImageHeight - 1, x) == 255 && left_r_init != 0) {
 					left_r_init = x;
 				}
-				if (mErodeImg.at<uchar>(mImageHeight - 1, x) == 255 && right_l_init == 640 && mRGrad > 0) {
-					right_l_init = x;
-					right_r_init = x;
-				}
-				if (mErodeImg.at<uchar>(mImageHeight - 1, x) == 255 && right_r_init != 640 && mRGrad > 0) {
-					right_l_init = x;
-				}
 			}
 			
 			if(x >= 140 && x < 640){
-				if(mErodeImg.at<uchar>(mImageHeight - 1, x) == 255 && left_l_init == 0 && mLGrad < 0){
-					left_l_init = x;
-					left_r_init = x;
-				}
-				if (mErodeImg.at<uchar>(mImageHeight - 1, x) == 255 && left_r_init != 0 && mLGrad < 0) {
-					left_r_init = x;
-				}
 				if (mErodeImg.at<uchar>(mImageHeight - 1, x) == 255 && right_l_init == 640 ) {
 					right_l_init = x;
 					right_r_init = x;
@@ -138,11 +124,11 @@ int LaneDetector<PREC>::totalFunction(const cv::Mat img)
 				}
 			}
 
-			if(left_r_init <= mImageWidth / 2 && right_l_init <= mImageWidth / 2 && mLGrad != 0 && mLGrad < 0){
+			if(left_r_init <= mImageWidth / 2 && right_l_init <= mImageWidth / 2 && mRGrad > 0 && static_cast<int>(mRGrad) == static_cast<int>(mLGrad)){
 				left_l_init = 0;
 				left_r_init = 0;
 			}
-			if(left_r_init >= mImageWidth / 2 && right_l_init >= mImageWidth / 2 && mRGrad != 0 && mRGrad > 0){
+			if(left_r_init >= mImageWidth / 2 && right_l_init >= mImageWidth / 2 && mLGrad < 0 && static_cast<int>(mRGrad) == static_cast<int>(mLGrad)){
 				right_l_init = 640;
 				right_r_init = 640;
 			}
