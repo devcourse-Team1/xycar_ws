@@ -55,12 +55,12 @@ cv::Mat LaneDetector<PREC>::regionOfInterest(cv::Mat src)
 }
 
 template <typename PREC>
-std::pair<double, double> LaneDetector<PREC>::calculatePoints(std::pair<double, double> prev_result, std::vector<cv::Vec4i> lines)
+std::pair<double, double> LaneDetector<PREC>::calculatePoints(std::pair<double, double> mresult, std::vector<cv::Vec4i> lines)
 {
     std::vector<double> rightResults, leftResults;
     std::pair<double, double> cur_result;
     const int mpoint_threshold = 200;
-    const int pos_threshold = 50;
+    const int pos_threshold = 400;
     double mpoint(0);
 
     for (cv::Vec4i line : lines)
@@ -74,11 +74,11 @@ std::pair<double, double> LaneDetector<PREC>::calculatePoints(std::pair<double, 
         double y_intercept = (x2 * y1 - x1 * y2) / (double)(x2 - x1);
         mpoint = static_cast<double>(mYOffset - y_intercept) / slope;
 
-        if ((!isnan(slope)) && (slope < -0.1) && (mpoint <= ((mImageWidth / 2) + mpoint_threshold)))
+        if ((!isnan(slope)) && (slope < -0.3) && (mpoint <= ((mImageWidth / 2) + mpoint_threshold)))
         {
             leftResults.push_back(mpoint);
         }
-        if ((!isnan(slope)) && (slope > 0.1) && (mpoint >= ((mImageWidth / 2) - mpoint_threshold)))
+        if ((!isnan(slope)) && (slope > 0.3) && (mpoint >= ((mImageWidth / 2) - mpoint_threshold)))
         {
             rightResults.push_back(mpoint);
         }
@@ -113,19 +113,23 @@ std::pair<double, double> LaneDetector<PREC>::calculatePoints(std::pair<double, 
         cur_result.second = mImageWidth;
     }
 
-    if ((abs(prev_result.first - cur_result.first) < pos_threshold) || (abs(prev_result.second - cur_result.second) < pos_threshold))
+    if (abs(mresult.first - cur_result.first) <= pos_threshold)
     {
-        prev_result = cur_result;
+        mresult.first = cur_result.first;
+    }
+    if (abs(mresult.second - cur_result.second) <= pos_threshold)
+    {
+        mresult.second = cur_result.second;
     }
 
     leftResults.clear();
     rightResults.clear();
 
-    return prev_result;
+    return mresult;
 }
 
 template <typename PREC>
-std::pair<double, std::pair<double, double>> LaneDetector<PREC>::Hough(const cv::Mat src, std::pair<double, double> prev_result)
+std::pair<double, std::pair<double, double>> LaneDetector<PREC>::Hough(const cv::Mat src)
 {
     if (src.empty()) {}
     else
@@ -146,7 +150,7 @@ std::pair<double, std::pair<double, double>> LaneDetector<PREC>::Hough(const cv:
             line(src, cv::Point(l[0], l[1]), cv::Point(l[2], l[3]), kRed, 2, cv::LINE_AA);
         }
 
-        mresult = calculatePoints(prev_result, lines);
+        mresult = calculatePoints(mresult, lines);
         // std::cout << "result : " << mresult.first << ", " << mresult.second << "\n";
 
         // Draw a line and points using calculated results
