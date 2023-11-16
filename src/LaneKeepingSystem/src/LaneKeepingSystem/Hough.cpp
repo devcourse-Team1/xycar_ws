@@ -113,9 +113,14 @@ std::pair<double, double> LaneDetector<PREC>::calculatePoints(std::pair<double, 
         cur_result.second = mImageWidth;
     }
 
-    if ((abs(prev_result.first - cur_result.first) < pos_threshold) || (abs(prev_result.second - cur_result.second) < pos_threshold))
+
+    if (abs(prev_result.first - cur_result.first) < pos_threshold)
     {
-        prev_result = cur_result;
+        prev_result.first = cur_result.first;
+    }
+    if (abs(prev_result.second - cur_result.second) < pos_threshold)
+    {
+        prev_result.second = cur_result.second;
     }
 
     leftResults.clear();
