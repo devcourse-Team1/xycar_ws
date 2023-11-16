@@ -74,11 +74,11 @@ std::pair<double, double> LaneDetector<PREC>::calculatePoints(std::pair<double, 
         double y_intercept = (x2 * y1 - x1 * y2) / (double)(x2 - x1);
         mpoint = static_cast<double>(mYOffset - y_intercept) / slope;
 
-        if ((slope < -0.3) && (mpoint <= ((mImageWidth / 2) + mpoint_threshold)))
+        if ((!isnan(slope)) && (slope < -0.1) && (mpoint <= ((mImageWidth / 2) + mpoint_threshold)))
         {
             leftResults.push_back(mpoint);
         }
-        if ((slope > 0.3) && (mpoint >= ((mImageWidth / 2) - mpoint_threshold)))
+        if ((!isnan(slope)) && (slope > 0.1) && (mpoint >= ((mImageWidth / 2) - mpoint_threshold)))
         {
             rightResults.push_back(mpoint);
         }
