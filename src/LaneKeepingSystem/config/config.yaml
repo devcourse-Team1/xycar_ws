@@ -1,6 +1,7 @@
 IMAGE:
   WIDTH: 640
   HEIGHT: 480
+  Y_OFFSET: 440
   # find your ROI parameter.
 
 
@@ -17,23 +18,26 @@ CALIBRATE:
   k3: 0
 
 XYCAR:
-  START_SPEED: 0.0
-  MAX_SPEED: 0.0
-  MIN_SPEED: 0.0
-  SPEED_CONTROL_THRESHOLD: 0.0
-  ACCELERATION_STEP: 0.00
-  DECELERATION_STEP: 0.0
+  START_SPEED: 8.0
+  MAX_SPEED: 14.0
+  MIN_SPEED: 5.0
+  SPEED_CONTROL_THRESHOLD: 20.0
+  ACCELERATION_STEP: 0.7
+  DECELERATION_STEP: 0.8
   # find your parameter.
 
 # If you want to use other control methods, Change PID to another control methods.
 PID:
-  P_GAIN: 0.0
+  P_GAIN: 0.15
   I_GAIN: 0.0000
-  D_GAIN: 0.00
+  D_GAIN: 0.06
+  P_GAIN_CURVE: 0.7
+  I_GAIN_CURVE: 0.0000
+  D_GAIN_CURVE: 0.00
   # find your parameter.
 
 MOVING_AVERAGE_FILTER:
-  SAMPLE_SIZE: 30
+  SAMPLE_SIZE: 20
 
 TOPIC:
   PUB_NAME: /xycar_motor

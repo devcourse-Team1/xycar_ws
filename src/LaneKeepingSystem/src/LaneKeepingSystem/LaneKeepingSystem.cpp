@@ -9,6 +9,7 @@ LaneKeepingSystem<PREC>::LaneKeepingSystem()
     YAML::Node config = YAML::LoadFile(configPath);
 
     mPID = new PIDController<PREC>(config["PID"]["P_GAIN"].as<PREC>(), config["PID"]["I_GAIN"].as<PREC>(), config["PID"]["D_GAIN"].as<PREC>());
+    mPID_CURVE = new PIDController<PREC>(config["PID"]["P_GAIN_CURVE"].as<PREC>(), config["PID"]["I_GAIN_CURVE"].as<PREC>(), config["PID"]["D_GAIN_CURVE"].as<PREC>());
     mMovingAverage = new MovingAverageFilter<PREC>(config["MOVING_AVERAGE_FILTER"]["SAMPLE_SIZE"].as<uint32_t>());
     mLaneDetector = new LaneDetector<PREC>(config);
     /*
@@ -46,6 +47,7 @@ template <typename PREC>
 LaneKeepingSystem<PREC>::~LaneKeepingSystem()
 {
     delete mPID;
+    delete mPID_CURVE;
     delete mMovingAverage;
     // delete your LaneDetector if you add your LaneDetector.
 }
@@ -54,7 +56,6 @@ template <typename PREC>
 void LaneKeepingSystem<PREC>::run()
 {
     ros::Rate rate(kFrameRate);
-
     while (ros::ok())
     {
         ros::spinOnce();
@@ -62,8 +63,46 @@ void LaneKeepingSystem<PREC>::run()
         write your code.
         */
 
-        cv::undistort(mFrame, undistort_mFrame, cameraMatrix, distCoeffs);
-        mLaneDetector->yourOwnFunction(distort_mFrame);
+        std::pair<double, std::pair<double, double>> result;
+        int32_t pos_diff, filtering_result, pid_result;
+        const int32_t angle_low_threshold = 50;
+        const int32_t angle_high_threshold = 150;
+
+        result = mLaneDetector->Hough(mFrame);
+        pos_diff = result.first;
+        // prev_result = result.second;
+
+        // std::cout << "result : " << pos_diff << ", " << prev_result.first << ", " << prev_result.second << "\n";
+        if (pos_diff == -320)
+        {
+            continue;
+        }
+        mMovingAverage->addSample(pos_diff);
+        filtering_result = mMovingAverage->getResult();
+
+        if (abs(filtering_result) >= angle_high_threshold)
+        {
+            pid_result = mPID_CURVE->getControlOutput(filtering_result * 2.4);
+        }
+        else if (abs(filtering_result) >= angle_low_threshold)
+        {
+            pid_result = mPID->getControlOutput(filtering_result * 1.7);
+        }
+        else
+        {
+            pid_result = mPID->getControlOutput(filtering_result);
+        }
+        // std::cout << "pid_result : " << pid_result << "\n";
+
+        if (pid_result == 0)
+        {
+            continue;
+        }
+        else
+        {
+            speedControl(pid_result);
+            drive(pid_result);
+        }
     }
 }
 
@@ -94,6 +133,7 @@ void LaneKeepingSystem<PREC>::drive(PREC steeringAngle)
     xycar_msgs::xycar_motor motorMessage;
     motorMessage.angle = std::round(steeringAngle);
     motorMessage.speed = std::round(mXycarSpeed);
+    // std::cout << "motor message: " << motorMessage << "\n";
 
     mPublisher.publish(motorMessage);
 }
