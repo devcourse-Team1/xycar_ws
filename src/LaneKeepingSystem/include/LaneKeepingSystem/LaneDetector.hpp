@@ -50,7 +50,7 @@ private:
 
     float mGausBlurSigma;
 
-    int mPosDiff;
+    float mPosDiff;
     float mLGrad, mRGrad;
 
     std::vector<float> mPosAndGrad;

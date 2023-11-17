@@ -53,10 +53,12 @@ void LaneKeepingSystem<PREC>::run()
         ros::spinOnce();
         if(!mFrame.empty()){
             mPos = mLaneDetector->totalFunction(mFrame);
-            mPidResult = mPID->getControlOutput(mPos);
+            mMovingAverage->addSample(mPos);
+            mFilteringResult = mMovingAverage->getResult();
+            mPidResult = mPID->getControlOutput(mFilteringResult);
 
-            // speedControl(mPidResult);
-            // drive(mPidResult*2);
+            speedControl(mPidResult);
+            drive(mPidResult*2);
         }
     }
 }

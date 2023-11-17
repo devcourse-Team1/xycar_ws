@@ -104,7 +104,7 @@ int LaneDetector<PREC>::totalFunction(const cv::Mat img)
 
 
         for(int x = 0; x < mImageWidth; x++){
-            if(x >= 0 &&  x < 500){
+            if(x >= 0 &&  x < 640){
 				if(mErodeImg.at<uchar>(mImageHeight - 1, x) == 255 && left_l_init == 0){
 					left_l_init = x;
 					left_r_init = x;
@@ -114,7 +114,7 @@ int LaneDetector<PREC>::totalFunction(const cv::Mat img)
 				}
 			}
 			
-			if(x >= 140 && x < 640){
+			if(x >= 0 && x < 640){
 				if (mErodeImg.at<uchar>(mImageHeight - 1, x) == 255 && right_l_init == 640 ) {
 					right_l_init = x;
 					right_r_init = x;
@@ -124,11 +124,14 @@ int LaneDetector<PREC>::totalFunction(const cv::Mat img)
 				}
 			}
 
-			if(left_r_init <= mImageWidth / 2 && right_l_init <= mImageWidth / 2 && mRGrad > 0 && static_cast<int>(mRGrad) == static_cast<int>(mLGrad)){
+			// std::cout << left_l_init << " " << left_r_init << " " << right_l_init << " " << right_r_init << std::endl;
+			// std::cout << mLGrad << " " << mRGrad << std::endl;
+
+			if((mRGrad > 0 && mLGrad > 0) || (left_r_init == right_l_init && left_r_init > mImageWidth / 2)){
 				left_l_init = 0;
 				left_r_init = 0;
 			}
-			if(left_r_init >= mImageWidth / 2 && right_l_init >= mImageWidth / 2 && mLGrad < 0 && static_cast<int>(mRGrad) == static_cast<int>(mLGrad)){
+			if((mRGrad < 0 && mLGrad < 0) || (left_r_init == right_l_init && right_l_init <= mImageWidth / 2)){
 				right_l_init = 640;
 				right_r_init = 640;
 			}
@@ -288,11 +291,10 @@ std::vector<float> LaneDetector<PREC>::numSlidingWindows(const int left_mid, con
 	if (mid_line[1] > 0) {
 		mid_line[1] = mid_line[1];
 	}
-
+	result.clear();
 	m_left_grad = ((l_points[11].y - l_points[0].y) / (l_points[11].x - l_points[0].x));
 	m_right_grad = ((r_points[11].y - r_points[0].y) / (r_points[11].x  - r_points[0].x));
-	std::cout << m_left_grad << " " << m_right_grad << std::endl;
-
+	
 	int lx0 = left_line[2], ly0 = left_line[3];
 	int lx1 = lx0 + h / 2 * left_line[0], ly1 = ly0 + h / 2 * left_line[1];
 	int lx2 = 2 * lx0 - lx1, ly2 = 2 * ly0 - ly1;
