@@ -104,7 +104,8 @@ int LaneDetector<PREC>::totalFunction(const cv::Mat img)
 
 
         for(int x = 0; x < mImageWidth; x++){
-            if(x >= 0 &&  x < 640){
+			if(x <= mImageWidth / 2){
+            // if(x >= 0 &&  x < 640){
 				if(mErodeImg.at<uchar>(mImageHeight - 1, x) == 255 && left_l_init == 0){
 					left_l_init = x;
 					left_r_init = x;
@@ -114,7 +115,8 @@ int LaneDetector<PREC>::totalFunction(const cv::Mat img)
 				}
 			}
 			
-			if(x >= 0 && x < 640){
+			// if(x >= 0 && x < 640){
+			else{
 				if (mErodeImg.at<uchar>(mImageHeight - 1, x) == 255 && right_l_init == 640 ) {
 					right_l_init = x;
 					right_r_init = x;
@@ -127,14 +129,14 @@ int LaneDetector<PREC>::totalFunction(const cv::Mat img)
 			// std::cout << left_l_init << " " << left_r_init << " " << right_l_init << " " << right_r_init << std::endl;
 			// std::cout << mLGrad << " " << mRGrad << std::endl;
 
-			if((mRGrad > 0 && mLGrad > 0) || (left_r_init == right_l_init && left_r_init > mImageWidth / 2)){
-				left_l_init = 0;
-				left_r_init = 0;
-			}
-			if((mRGrad < 0 && mLGrad < 0) || (left_r_init == right_l_init && right_l_init <= mImageWidth / 2)){
-				right_l_init = 640;
-				right_r_init = 640;
-			}
+			// if((mRGrad > 0 && mLGrad > 0) || (left_r_init == right_l_init && left_r_init > mImageWidth / 2)){
+			// 	left_l_init = 0;
+			// 	left_r_init = 0;
+			// }
+			// if((mRGrad < 0 && mLGrad < 0) || (left_r_init == right_l_init && right_l_init <= mImageWidth / 2)){
+			// 	right_l_init = 640;
+			// 	right_r_init = 640;
+			// }
         }
 
         int left_mid_point = (left_l_init + left_r_init) >> 1;
@@ -148,7 +150,7 @@ int LaneDetector<PREC>::totalFunction(const cv::Mat img)
 
         // cv::imshow("frame_", img);
         // cv::imshow("distort", mUnditort);
-		cv::imshow("check", mBirdEyeImg);
+		// cv::imshow("check", mBirdEyeImg);
 		// cv::imshow("hsv_img", mHsvImg);
 		// cv::imshow("v_plane", v_plane);
 		// cv::imshow("vthres", mErodeImg);
