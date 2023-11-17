@@ -41,10 +41,10 @@ cv::Mat LaneDetector<PREC>::regionOfInterest(cv::Mat src)
 {
     cv::Mat src_roi;
 
-    const int x = 300;
+    const int x = 0;
 
-    const cv::Point p1(0, mYOffset - 10), p2(x, mYOffset + 10);
-    const cv::Point p3(mImageWidth - x, mYOffset - 10), p4(mImageWidth, mYOffset + 10);
+    const cv::Point p1(x, mYOffset - 10), p2(mImageWidth / 2, mYOffset + 10);
+    const cv::Point p3(mImageWidth / 2, mYOffset - 10), p4(mImageWidth - x, mYOffset + 10);
 
     cv::Mat roi_mask = cv::Mat::zeros(mImageHeight, mImageWidth, CV_8UC1);
     cv::rectangle(roi_mask, p1, p2, kBlue, -1, cv::LINE_AA);
@@ -60,7 +60,7 @@ std::pair<double, double> LaneDetector<PREC>::calculatePoints(std::pair<double, 
     std::vector<double> rightResults, leftResults;
     std::pair<double, double> cur_result;
     const int mpoint_threshold = 200;
-    const int pos_threshold = 400;
+    const int pos_threshold = 640;
     double mpoint(0);
 
     for (cv::Vec4i line : lines)
@@ -74,11 +74,11 @@ std::pair<double, double> LaneDetector<PREC>::calculatePoints(std::pair<double, 
         double y_intercept = (x2 * y1 - x1 * y2) / (double)(x2 - x1);
         mpoint = static_cast<double>(mYOffset - y_intercept) / slope;
 
-        if ((!isnan(slope)) && (slope < -0.3) && (mpoint <= ((mImageWidth / 2) + mpoint_threshold)))
+        if ((!isnan(slope)) && (slope < -0.1) && (mpoint <= ((mImageWidth / 2) + mpoint_threshold)))
         {
             leftResults.push_back(mpoint);
         }
-        if ((!isnan(slope)) && (slope > 0.3) && (mpoint >= ((mImageWidth / 2) - mpoint_threshold)))
+        if ((!isnan(slope)) && (slope > 0.1) && (mpoint >= ((mImageWidth / 2) - mpoint_threshold)))
         {
             rightResults.push_back(mpoint);
         }
@@ -111,6 +111,11 @@ std::pair<double, double> LaneDetector<PREC>::calculatePoints(std::pair<double, 
     {
         // cur_result.second = prev_result.second;
         cur_result.second = mImageWidth;
+    }
+
+    if (cur_result.first - cur_result.second > 0)
+    {
+        return mresult;
     }
 
     if (abs(mresult.first - cur_result.first) <= pos_threshold)
@@ -161,6 +166,7 @@ std::pair<double, std::pair<double, double>> LaneDetector<PREC>::Hough(const cv:
         circle(src, cv::Point(mImageWidth / 2, mYOffset), 3, kGreen, -1, cv::LINE_AA, 0);
 
         double pos_diff = ((mresult.first + mresult.second) / 2) - (mImageWidth / 2);
+        putText(src, std::to_string(pos_diff), cv::Point(10, 30), 0, 1, kBlue);
 
         imshow("roi result", src_roi);
         imshow("result", src);

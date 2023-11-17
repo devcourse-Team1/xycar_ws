@@ -9,6 +9,7 @@ LaneKeepingSystem<PREC>::LaneKeepingSystem()
     YAML::Node config = YAML::LoadFile(configPath);
 
     mPID = new PIDController<PREC>(config["PID"]["P_GAIN"].as<PREC>(), config["PID"]["I_GAIN"].as<PREC>(), config["PID"]["D_GAIN"].as<PREC>());
+    mPID_CURVE = new PIDController<PREC>(config["PID"]["P_GAIN_CURVE"].as<PREC>(), config["PID"]["I_GAIN_CURVE"].as<PREC>(), config["PID"]["D_GAIN_CURVE"].as<PREC>());
     mMovingAverage = new MovingAverageFilter<PREC>(config["MOVING_AVERAGE_FILTER"]["SAMPLE_SIZE"].as<uint32_t>());
     mLaneDetector = new LaneDetector<PREC>(config);
     /*
@@ -39,6 +40,7 @@ template <typename PREC>
 LaneKeepingSystem<PREC>::~LaneKeepingSystem()
 {
     delete mPID;
+    delete mPID_CURVE;
     delete mMovingAverage;
     // delete your LaneDetector if you add your LaneDetector.
 }
@@ -73,12 +75,11 @@ void LaneKeepingSystem<PREC>::run()
 
         if (abs(filtering_result) >= angle_high_threshold)
         {
-            pid_result = mPID->getControlOutput(filtering_result * 2.15);
-            std::cout << "filtering result : " << filtering_result << "\n";
+            pid_result = mPID_CURVE->getControlOutput(filtering_result * 2.4);
         }
         else if (abs(filtering_result) >= angle_low_threshold)
         {
-            pid_result = mPID->getControlOutput(filtering_result * 1.8);
+            pid_result = mPID->getControlOutput(filtering_result * 1.7);
         }
         else
         {

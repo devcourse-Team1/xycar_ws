@@ -66,7 +66,8 @@ private:
     void imageCallback(const sensor_msgs::Image& message);
 
 private:
-    ControllerPtr mPID;       ///< PID Class for Control
+    ControllerPtr mPID; ///< PID Class for Control
+    ControllerPtr mPID_CURVE;
     FilterPtr mMovingAverage; ///< Moving Average Filter Class for Noise filtering
     DetectorPtr mLaneDetector;
 
